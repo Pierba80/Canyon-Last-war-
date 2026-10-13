@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, UserMinus, UserRoundX, Users } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, TriangleAlert, UserMinus, UserRoundX, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,9 @@ import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, suggestNames, teamTitle,
+  STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
 } from "@/lib/planner";
-import type { PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
+import type { NamePlacements, PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
 
 interface Props {
   team: TeamId;
@@ -24,19 +24,21 @@ interface Props {
   unassigned: string[];
   /** Every name already on a visible building (either team) — used to offer importing them as members. */
   usedNames: string[];
+  placements: Map<string, NamePlacements>;
+  duplicates: NamePlacements[];
 }
 
 export default function AssignmentPanel(props: Props) {
-  const { team, plan, focusedId, onFocus, actions, knownNames, unassigned } = props;
+  const { team, plan, focusedId, onFocus, actions, knownNames, unassigned, placements } = props;
   if (focusedId && STRUCTURE_BY_ID[focusedId]) {
     return (
-      <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} unassigned={unassigned} />
+      <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} unassigned={unassigned} placements={placements} />
     );
   }
   return <Roster {...props} />;
 }
 
-function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames }: Props) {
+function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames, duplicates }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const operatives = plan.selected.reduce((n, id) => {
@@ -55,6 +57,7 @@ function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames }
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-3">
+        <DoubleBooked duplicates={duplicates} team={team} onFocus={onFocus} actions={actions} />
         <MembersSummary members={members} unassigned={unassigned} onManage={() => setMembersOpen(true)} />
         <p className="px-2 pb-2 text-xs text-[#8EA7C7]">Tap a structure on the map or below to deploy a squad.</p>
         <ul className="space-y-1">
@@ -150,6 +153,63 @@ function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames }
   );
 }
 
+function DoubleBooked({ duplicates, team, onFocus, actions }: { duplicates: NamePlacements[]; team: TeamId; onFocus: (id: string | null) => void; actions: PlannerActions }) {
+  if (!duplicates.length) return null;
+  return (
+    <section data-testid="double-booked-section" className="mb-3 rounded-md border border-[#FF3B62]/40 bg-[#FF3B62]/[0.07] p-3">
+      <div className="flex items-center gap-2">
+        <TriangleAlert className="size-4 text-[#FF6B8B]" />
+        <p className="flex-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF8BA4]">Double-booked</p>
+        <span data-testid="double-booked-count" className="font-heading text-sm font-bold text-[#FF6B8B]">{duplicates.length}</span>
+      </div>
+      <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
+        {duplicates.map((d) => (
+          <li key={d.name} data-testid={`double-booked-${slug(d.name)}`}>
+            <p className="text-sm font-semibold text-[#FFD1DA]">{d.name}</p>
+            <div className="mt-0.5 flex flex-wrap gap-1">
+              {d.placements.map((p, i) => (
+                <button
+                  key={`${p.team}-${p.id}-${i}`}
+                  type="button"
+                  data-testid={`double-booked-goto-${slug(d.name)}-${i}`}
+                  disabled={p.team !== team}
+                  title={p.team !== team ? `Switch to Team ${p.team} to edit` : "Open this building"}
+                  onClick={() => {
+                    actions.select(team, p.id);
+                    onFocus(p.id);
+                  }}
+                  className="rounded-sm border border-[#FF3B62]/30 px-1.5 py-0.5 text-[11px] text-[#FFB3C1] transition-colors duration-150 enabled:hover:border-[#FF6B8B] enabled:hover:text-white disabled:opacity-60"
+                >
+                  {placementLabel(p)}
+                </button>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Inline warning under a name that is also placed elsewhere. */
+function DupNote({ name, placements, team, id, testId }: { name: string; placements: Map<string, NamePlacements>; team: TeamId; id: string; testId: string }) {
+  const entry = placements.get(cleanName(name).toLowerCase());
+  if (!entry || entry.placements.length < 2) return null;
+  let skipped = false;
+  const others = entry.placements.filter((p) => {
+    if (!skipped && p.team === team && p.id === id) {
+      skipped = true;
+      return false;
+    }
+    return true;
+  });
+  return (
+    <p data-testid={testId} className="flex basis-full items-start gap-1 pl-7 text-[11px] text-[#FF8BA4]">
+      <TriangleAlert className="mt-px size-3 shrink-0" /> Also on {others.map(placementLabel).join(", ")}
+    </p>
+  );
+}
+
 function MembersSummary({ members, unassigned, onManage }: { members: string[]; unassigned: string[]; onManage: () => void }) {
   const done = members.length > 0 && unassigned.length === 0;
   return (
@@ -233,7 +293,7 @@ function Stat({ label, value, testId }: { label: string; value: string; testId: 
   );
 }
 
-function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "unassigned"> & { id: string }) {
+function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned, placements }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "unassigned" | "placements"> & { id: string }) {
   const def = STRUCTURE_BY_ID[id];
   const a = plan.assignments[id] ?? emptyAssignment();
   const selected = plan.selected.includes(id);
@@ -254,6 +314,13 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned }: Pi
     if (!selected) actions.select(team, id);
     names.forEach((n) => actions.addPlayer(team, id, n));
     setDraft("");
+    warnIfPlaced(names);
+  };
+  const warnIfPlaced = (names: string[]) => {
+    for (const n of names) {
+      const e = placements.get(n.toLowerCase());
+      if (e?.placements.length) toast.warning(`${e.name} is already on ${e.placements.map(placementLabel).join(", ")}`);
+    }
   };
   const add = () => addNames(draft.split(",").map(cleanName).filter(Boolean));
 
@@ -301,8 +368,12 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned }: Pi
               if (!selected) actions.select(team, id);
               actions.setLeader(team, id, n);
               setLeaderFocus(false);
+              warnIfPlaced([n]);
             }}
           />
+          <div className="flex flex-wrap">
+            <DupNote name={a.leader} placements={placements} team={team} id={id} testId="leader-dup-warning" />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -350,14 +421,14 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned }: Pi
           )}
           <ul className="space-y-1.5 pt-1" data-testid="player-list">
             {a.players.map((p, i) => (
-              <li key={i} className="flex items-center gap-2">
+              <li key={i} className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="w-5 text-right font-mono text-[10px] text-[#5B7A9C]">{String(i + 1).padStart(2, "0")}</span>
                 <Input
                   data-testid={`player-edit-input-${i}`}
                   aria-label={`Player ${i + 1}`}
                   value={p}
                   onChange={(e) => actions.updatePlayer(team, id, i, e.target.value)}
-                  className="h-10 bg-[#071B33]/70"
+                  className="h-10 w-auto min-w-0 flex-1 bg-[#071B33]/70"
                 />
                 <Button
                   variant="ghost"
@@ -369,6 +440,7 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned }: Pi
                 >
                   <UserMinus className="size-4" />
                 </Button>
+                <DupNote name={p} placements={placements} team={team} id={id} testId={`player-dup-warning-${i}`} />
               </li>
             ))}
             {a.players.length === 0 && (

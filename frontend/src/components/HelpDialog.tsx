@@ -6,7 +6,8 @@ const STEPS: [string, string][] = [
   ["Assign squads", "Enter one squad leader and add allied players (Enter or comma to add several). Click any nameplate to edit it."],
   ["Navigate", "Scroll or pinch to zoom, drag to pan, and use the fit button to reset the view."],
   ["Calibrate", "Turn on Edit hotspots and drag zones to line up with your map. Reset restores defaults."],
-  ["Map & export", "Replace map uploads a new image for both teams. Export saves a high-res PNG with the team title and nameplates."],
+  ["Map & export", "Replace map uploads a new image for both teams. Export saves a high-res PNG with the team title and nameplates, or prints a roster sheet (save as PDF from the print dialog)."],
+  ["Avoid double-booking", "Members placed on two buildings (in either team) are flagged in red in the console and editor."],
 ];
 
 export default function HelpDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {

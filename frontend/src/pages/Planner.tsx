@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleHelp, Download, ImageUp, Move, RotateCcw, Route, Users } from "lucide-react";
+import { flushSync } from "react-dom";
+import { CircleHelp, Download, ImageUp, Move, Printer, RotateCcw, Route, TriangleAlert, Users } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import BattleMap from "@/components/BattleMap";
 import AssignmentPanel from "@/components/AssignmentPanel";
 import HelpDialog from "@/components/HelpDialog";
+import PrintRoster from "@/components/PrintRoster";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TEAMS, collectNames, teamTitle, unassignedMembers, useMapImage, usePlanner } from "@/lib/planner";
+import {
+  TEAMS, collectNames, findDuplicates, placementsByName, teamTitle, unassignedMembers, useMapImage, usePlanner,
+} from "@/lib/planner";
 import type { TeamId } from "@/lib/planner";
 import { exportTeamPlan, fileToDataUrl } from "@/lib/mapCanvas";
 
@@ -41,6 +45,13 @@ export default function Planner() {
   const plan = state.teams[team];
   const knownNames = useMemo(() => collectNames(state.teams, state.members), [state.teams, state.members]);
   const usedNames = useMemo(() => collectNames(state.teams), [state.teams]);
+  const placements = useMemo(() => placementsByName(state.teams), [state.teams]);
+  const duplicates = useMemo(() => findDuplicates(placements), [placements]);
+  const [printTeams, setPrintTeams] = useState<TeamId[]>(TEAMS);
+  const printRoster = (teams: TeamId[]) => {
+    flushSync(() => setPrintTeams(teams));
+    window.print();
+  };
   const unassigned = useMemo(() => unassignedMembers(state.members, state.teams), [state.members, state.teams]);
 
   const switchTeam = (t: TeamId) => {
@@ -84,10 +95,11 @@ export default function Planner() {
     }
   };
 
-  const panel = <AssignmentPanel team={team} plan={plan} focusedId={focusedId} onFocus={(id) => { setFocusedId(id); if (!id && !isDesktop) setSheetOpen(false); }} actions={actions} knownNames={knownNames} members={state.members} unassigned={unassigned} usedNames={usedNames} />;
+  const panel = <AssignmentPanel team={team} plan={plan} focusedId={focusedId} onFocus={(id) => { setFocusedId(id); if (!id && !isDesktop) setSheetOpen(false); }} actions={actions} knownNames={knownNames} members={state.members} unassigned={unassigned} usedNames={usedNames} placements={placements} duplicates={duplicates} />;
 
   return (
-    <div className="flex h-dvh flex-col bg-[#060A12] text-[#E2F1FF]">
+    <>
+    <div className="flex h-dvh flex-col bg-[#060A12] text-[#E2F1FF] print:hidden">
       <header className="relative z-40 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[#00E5FF]/25 bg-[#050D1A]/90 px-3 py-2 backdrop-blur-md sm:px-5">
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full bg-[#00E5FF] shadow-[0_0_10px_#00E5FF] hud-pulse" />
@@ -139,6 +151,15 @@ export default function Planner() {
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem data-testid="export-both-item" onClick={async () => { await doExport("A"); await doExport("B"); }}>Export both teams</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {TEAMS.map((t) => (
+                <DropdownMenuItem key={`p-${t}`} data-testid={`print-roster-${t.toLowerCase()}-item`} onClick={() => printRoster([t])}>
+                  <Printer className="size-4" /> Print {teamTitle(t)} roster
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem data-testid="print-roster-both-item" onClick={() => printRoster(TEAMS)}>
+                <Printer className="size-4" /> Print both rosters
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <HeaderBtn testId="help-btn" label="Help" onClick={() => setHelpOpen(true)}>
@@ -194,6 +215,11 @@ export default function Planner() {
                 className="absolute bottom-3 left-1/2 z-30 h-11 -translate-x-1/2 gap-2 px-5 shadow-[0_0_20px_rgba(0,229,255,0.45)]"
               >
                 <Users className="size-4" /> Assignments ({plan.selected.length})
+                {duplicates.length > 0 && (
+                  <span data-testid="mobile-dup-badge" className="flex items-center gap-0.5 rounded-sm bg-[#FF3B62] px-1.5 text-[11px] font-bold text-white">
+                    <TriangleAlert className="size-3" /> {duplicates.length}
+                  </span>
+                )}
               </Button>
             )}
           </div>
@@ -218,6 +244,8 @@ export default function Planner() {
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <Toaster richColors />
     </div>
+    <PrintRoster teams={printTeams} plans={state.teams} placements={placements} />
+    </>
   );
 }
 

@@ -160,3 +160,13 @@
 @media (prefers-reduced-motion: reduce) {
   .dash-flow, .hud-pulse, .zone-focused { animation: none; }
 }
+
+/* ---------- Print: roster sheet only ---------- */
+@media print {
+  @page { size: A4 portrait; margin: 14mm; }
+  html, body { background: #fff !important; color: #000 !important; color-scheme: light; }
+  [data-sonner-toaster], [data-base-ui-portal], [role="dialog"], [role="menu"] { display: none !important; }
+  .print-roster { color: #000; font-family: var(--font-sans); }
+  .print-page { break-after: page; }
+  .print-page:last-child { break-after: auto; }
+}

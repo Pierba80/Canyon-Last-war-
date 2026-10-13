@@ -305,6 +305,37 @@ export function assignedNames(teams: Record<TeamId, TeamPlan>): Set<string> {
   return out;
 }
 
+export interface Placement { team: TeamId; id: string; role: "leader" | "player" }
+export interface NamePlacements { name: string; placements: Placement[] }
+
+/** Where each name sits on visible (selected) structures, keyed by lowercased name. */
+export function placementsByName(teams: Record<TeamId, TeamPlan>): Map<string, NamePlacements> {
+  const out = new Map<string, NamePlacements>();
+  for (const t of TEAMS) {
+    for (const id of teams[t].selected) {
+      const a = teams[t].assignments[id];
+      if (!a) continue;
+      const entries: [string, Placement["role"]][] = [[a.leader, "leader"], ...a.players.map((p): [string, Placement["role"]] => [p, "player"])];
+      for (const [n, role] of entries) {
+        const c = cleanName(n);
+        if (!c) continue;
+        const k = c.toLowerCase();
+        const cur = out.get(k) ?? { name: c, placements: [] };
+        cur.placements.push({ team: t, id, role });
+        out.set(k, cur);
+      }
+    }
+  }
+  return out;
+}
+
+/** Names placed more than once across both teams. */
+export const findDuplicates = (m: Map<string, NamePlacements>) =>
+  [...m.values()].filter((v) => v.placements.length > 1).sort((a, b) => a.name.localeCompare(b.name));
+
+export const placementLabel = (p: Placement) =>
+  `Team ${p.team} · ${STRUCTURE_BY_ID[p.id]?.name ?? p.id}${p.role === "leader" ? " (leader)" : ""}`;
+
 /** Members not on any building in Team A or Team B. */
 export function unassignedMembers(members: string[], teams: Record<TeamId, TeamPlan>): string[] {
   const used = assignedNames(teams);
