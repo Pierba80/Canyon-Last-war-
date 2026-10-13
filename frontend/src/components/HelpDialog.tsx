@@ -7,6 +7,7 @@ const STEPS: [string, string][] = [
   ["Navigate", "Scroll or pinch to zoom, drag to pan, and use the fit button to reset the view."],
   ["Calibrate", "Turn on Edit hotspots and drag zones to line up with your map. Reset restores defaults."],
   ["Map & export", "Replace map uploads a new image for both teams. Export saves a high-res PNG with the team title and nameplates, or prints a roster sheet (save as PDF from the print dialog)."],
+  ["Battle & reserves", "Click the countdown to set the shared battle time (optionally weekly). Each team has its own Reserves screen next to Map."],
   ["Avoid double-booking", "Members placed on two buildings (in either team) are flagged in red in the console and editor."],
 ];
 

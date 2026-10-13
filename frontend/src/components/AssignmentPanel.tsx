@@ -172,8 +172,8 @@ function DoubleBooked({ duplicates, team, onFocus, actions }: { duplicates: Name
                   key={`${p.team}-${p.id}-${i}`}
                   type="button"
                   data-testid={`double-booked-goto-${slug(d.name)}-${i}`}
-                  disabled={p.team !== team}
-                  title={p.team !== team ? `Switch to Team ${p.team} to edit` : "Open this building"}
+                  disabled={p.team !== team || p.role === "reserve"}
+                  title={p.role === "reserve" ? "Open the Reserves screen to edit" : p.team !== team ? `Switch to Team ${p.team} to edit` : "Open this building"}
                   onClick={() => {
                     actions.select(team, p.id);
                     onFocus(p.id);
@@ -192,7 +192,7 @@ function DoubleBooked({ duplicates, team, onFocus, actions }: { duplicates: Name
 }
 
 /** Inline warning under a name that is also placed elsewhere. */
-function DupNote({ name, placements, team, id, testId }: { name: string; placements: Map<string, NamePlacements>; team: TeamId; id: string; testId: string }) {
+export function DupNote({ name, placements, team, id, testId }: { name: string; placements: Map<string, NamePlacements>; team: TeamId; id: string; testId: string }) {
   const entry = placements.get(cleanName(name).toLowerCase());
   if (!entry || entry.placements.length < 2) return null;
   let skipped = false;
@@ -474,7 +474,7 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned, plac
 }
 
 /** Tappable chips of previously used alliance names. mousedown is cancelled so the input keeps focus. */
-function Suggestions({ names, onPick, testId, label = "Used before" }: { names: string[]; onPick: (n: string) => void; testId: string; label?: string }) {
+export function Suggestions({ names, onPick, testId, label = "Used before" }: { names: string[]; onPick: (n: string) => void; testId: string; label?: string }) {
   if (!names.length) return null;
   return (
     <div data-testid={testId} className="flex flex-wrap items-center gap-1.5 pt-0.5" onMouseDown={(e) => e.preventDefault()}>

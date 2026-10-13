@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { CircleHelp, Download, ImageUp, Move, Printer, RotateCcw, Route, TriangleAlert, Users } from "lucide-react";
+import { CircleHelp, Download, ImageUp, Map as MapIcon, Move, Printer, RotateCcw, Route, TriangleAlert, UserRoundPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import BattleMap from "@/components/BattleMap";
 import AssignmentPanel from "@/components/AssignmentPanel";
 import HelpDialog from "@/components/HelpDialog";
 import PrintRoster from "@/components/PrintRoster";
+import BattleCountdown from "@/components/BattleCountdown";
+import ReservesView from "@/components/ReservesView";
+import { battleLabel } from "@/lib/battle";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -41,6 +44,7 @@ export default function Planner() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [view, setView] = useState<"map" | "reserves">("map");
   const fileRef = useRef<HTMLInputElement>(null);
   const plan = state.teams[team];
   const knownNames = useMemo(() => collectNames(state.teams, state.members), [state.teams, state.members]);
@@ -70,7 +74,7 @@ export default function Planner() {
     setExporting(true);
     const id = toast.loading(`Rendering ${teamTitle(t)} briefing…`);
     try {
-      const r = await exportTeamPlan({ team: t, imageSrc: map.src, hotspots: state.hotspots, plan: state.teams[t], showArrows: state.showArrows });
+      const r = await exportTeamPlan({ team: t, imageSrc: map.src, hotspots: state.hotspots, plan: state.teams[t], showArrows: state.showArrows, battle: battleLabel(state.battle) });
       toast.success(`${teamTitle(t)} exported (${r.width}×${r.height})`, { id });
     } catch {
       toast.error("Export failed — try a different map image", { id });
@@ -171,7 +175,8 @@ export default function Planner() {
 
       <div className="flex min-h-0 flex-1">
         <main className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-end justify-between gap-3 px-4 pb-2 pt-3 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2 px-4 pb-2 pt-3 sm:px-6">
+            <div className="min-w-0">
             <motion.h1
               key={team}
               initial={{ opacity: 0, y: 6 }}
@@ -182,11 +187,30 @@ export default function Planner() {
             >
               {teamTitle(team)}
             </motion.h1>
-            <p data-testid="autosave-status" className="pb-1 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-[#7B96B8]">
-              {savedAt ? <>Autosaved <span className="text-[#00F5A0]">{savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span></> : "Local save on"}
-            </p>
+            <div role="tablist" aria-label="Screen" className="mt-2 flex gap-1" data-testid="view-tabs">
+              {([["map", "Map", MapIcon], ["reserves", `Reserves (${plan.reserves.length})`, UserRoundPlus]] as const).map(([v, label, Icon]) => (
+                <button
+                  key={v}
+                  role="tab"
+                  type="button"
+                  aria-selected={view === v}
+                  data-testid={`view-${v}-tab`}
+                  onClick={() => { setView(v); setFocusedId(null); setEditMode(false); }}
+                  className={`flex min-h-9 items-center gap-1.5 rounded-sm border px-3 font-mono text-[11px] uppercase tracking-[0.15em] transition-[background-color,border-color,color] duration-200 ${view === v ? "border-[#00E5FF] bg-[#00E5FF]/15 text-[#38F8FF]" : "border-[#00E5FF]/20 text-[#8EA7C7] hover:border-[#00E5FF]/50 hover:text-white"}`}
+                >
+                  <Icon className="size-3.5" /> {label}
+                </button>
+              ))}
+            </div>
+            </div>
+            <div className="flex items-end gap-3">
+              <BattleCountdown battle={state.battle} onChange={actions.setBattle} />
+              <p data-testid="autosave-status" className="hidden pb-1 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-[#7B96B8] sm:block">
+                {savedAt ? <>Autosaved <span className="text-[#00F5A0]">{savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span></> : "Local save on"}
+              </p>
+            </div>
           </div>
-          {editMode && (
+          {editMode && view === "map" && (
             <div data-testid="edit-mode-banner" className="mx-4 mb-2 flex flex-wrap items-center gap-2 rounded-md border border-amber-300/40 bg-amber-300/10 px-3 py-2 text-xs text-amber-200 sm:mx-6">
               <Move className="size-4" />
               <span className="flex-1">Hotspot edit mode — drag the dashed zones to line them up with the buildings. Shared by both teams.</span>
@@ -197,6 +221,9 @@ export default function Planner() {
             </div>
           )}
           <div className="relative mx-2 mb-2 min-h-0 flex-1 overflow-hidden rounded-lg border border-[#00E5FF]/20 bg-[#08101E] sm:mx-4">
+            {view === "reserves" ? (
+              <ReservesView team={team} plan={plan} actions={actions} knownNames={knownNames} unassigned={unassigned} placements={placements} />
+            ) : (
             <BattleMap
               imageSrc={map.src}
               hotspots={state.hotspots}
@@ -208,7 +235,8 @@ export default function Planner() {
               onHotspotMove={actions.moveHotspot}
               onBackgroundClick={() => isDesktop && setFocusedId(null)}
             />
-            {!isDesktop && (
+            )}
+            {!isDesktop && view === "map" && (
               <Button
                 data-testid="open-assignments-btn"
                 onClick={() => setSheetOpen(true)}
@@ -244,7 +272,7 @@ export default function Planner() {
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <Toaster richColors />
     </div>
-    <PrintRoster teams={printTeams} plans={state.teams} placements={placements} />
+    <PrintRoster teams={printTeams} plans={state.teams} placements={placements} battle={battleLabel(state.battle)} />
     </>
   );
 }

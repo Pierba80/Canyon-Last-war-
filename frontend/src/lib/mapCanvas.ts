@@ -73,8 +73,9 @@ const FOOTER_H = 22;
 
 export async function exportTeamPlan(opts: {
   team: TeamId; imageSrc: string; hotspots: Record<string, Hotspot>; plan: TeamPlan; showArrows: boolean;
+  battle: string | null;
 }) {
-  const { team, imageSrc, hotspots, plan, showArrows } = opts;
+  const { team, imageSrc, hotspots, plan, showArrows, battle } = opts;
   await Promise.all([
     document.fonts.load(`900 30px ${FONT_HEADING}`),
     document.fonts.load(`700 10px ${FONT_HEADING}`),
@@ -97,7 +98,24 @@ export async function exportTeamPlan(opts: {
     return layoutPlate(ctx, (anchor.x / 100) * STAGE_W, (anchor.y / 100) * stageH, plateLines(s.name, a));
   });
   const contentH = Math.max(stageH, ...plates.map((p) => p.y + p.h + 8));
-  const totalH = HEADER_H + contentH + FOOTER_H;
+  // Reserves block below the map, word-wrapped
+  const reserves = plan.reserves.map((r) => r.trim()).filter(Boolean);
+  const resFont = `500 9px ${FONT_SANS}`;
+  const resLines: string[] = [];
+  if (reserves.length) {
+    ctx.font = resFont;
+    let line = "";
+    for (const r of reserves) {
+      const next = line ? `${line}   ·   ${r}` : r;
+      if (line && ctx.measureText(next).width > STAGE_W - 40) {
+        resLines.push(line);
+        line = r;
+      } else line = next;
+    }
+    if (line) resLines.push(line);
+  }
+  const reservesH = reserves.length ? 26 + resLines.length * 13 : 0;
+  const totalH = HEADER_H + contentH + reservesH + FOOTER_H;
 
   canvas.width = Math.round(outW);
   canvas.height = Math.round(totalH * k);
@@ -125,8 +143,17 @@ export async function exportTeamPlan(opts: {
   ctx.shadowColor = "rgba(0,229,255,0.85)";
   ctx.shadowBlur = 14;
   ctx.fillStyle = "#E2F9FF";
-  ctx.fillText(teamTitle(team), STAGE_W / 2, 40);
+  ctx.fillText(teamTitle(team), STAGE_W / 2, battle ? 34 : 40);
   ctx.restore();
+  if (battle) {
+    ctx.save();
+    ctx.font = `700 8.5px ${FONT_MONO}`;
+    ctx.fillStyle = "#38F8FF";
+    ctx.shadowColor = "rgba(0,229,255,0.7)";
+    ctx.shadowBlur = 6;
+    ctx.fillText(`BATTLE: ${battle.toUpperCase()}`, STAGE_W / 2, 48);
+    ctx.restore();
+  }
   ctx.font = `500 7px ${FONT_MONO}`;
   ctx.fillStyle = "#7DD3FC";
   const players = selected.reduce((n, s) => {
@@ -135,7 +162,7 @@ export async function exportTeamPlan(opts: {
   }, 0);
   ctx.fillText(
     `TACTICAL DEPLOYMENT PLAN  ·  ${selected.length} STRUCTURES  ·  ${players} OPERATIVES  ·  ${new Date().toLocaleDateString()}`,
-    STAGE_W / 2, 58,
+    STAGE_W / 2, battle ? 61 : 58,
   );
 
   // Map
@@ -220,6 +247,20 @@ export async function exportTeamPlan(opts: {
     }
   }
   ctx.restore();
+
+  if (reserves.length) {
+    const top = HEADER_H + contentH;
+    ctx.fillStyle = "#38F8FF";
+    ctx.fillRect(20, top + 6, STAGE_W - 40, 0.6);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = `600 7px ${FONT_MONO}`;
+    ctx.fillStyle = "#7DD3FC";
+    ctx.fillText(`RESERVES (${reserves.length})`, 20, top + 18);
+    ctx.font = resFont;
+    ctx.fillStyle = "#E0F2FE";
+    resLines.forEach((l, i) => ctx.fillText(l, 20, top + 31 + i * 13));
+  }
 
   // Footer
   ctx.textAlign = "right";

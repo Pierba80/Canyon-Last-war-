@@ -31,7 +31,17 @@ export interface Assignment {
 export interface TeamPlan {
   selected: string[];
   assignments: Record<string, Assignment>;
+  /** Reserve players for this team (not on a building). */
+  reserves: string[];
 }
+
+/** Shared battle start. `at` is a local "YYYY-MM-DDTHH:mm" (datetime-local value). */
+export interface BattleSchedule {
+  at: string | null;
+  weekly: boolean;
+}
+
+export const RESERVES_ID = "reserves";
 
 export interface PlannerState {
   teams: Record<TeamId, TeamPlan>;
@@ -39,6 +49,7 @@ export interface PlannerState {
   showArrows: boolean;
   /** Alliance member list, shared by both teams. */
   members: string[];
+  battle: BattleSchedule;
 }
 
 export const STRUCTURES: StructureDef[] = [
@@ -122,7 +133,7 @@ export const FONT_SANS = '"Geist Variable", sans-serif';
 export const FONT_MONO = '"JetBrains Mono Variable", monospace';
 
 export const emptyAssignment = (): Assignment => ({ leader: "", players: [] });
-const emptyTeam = (): TeamPlan => ({ selected: [], assignments: {} });
+const emptyTeam = (): TeamPlan => ({ selected: [], assignments: {}, reserves: [] });
 
 const STATE_KEY = "canyon_tactical_planner_state_v1";
 const IMAGE_KEY = "canyon_tactical_planner_map_v1";
@@ -133,6 +144,7 @@ function loadState(): PlannerState {
     hotspots: { ...DEFAULT_HOTSPOTS },
     showArrows: false,
     members: [],
+    battle: { at: null, weekly: false },
   };
   try {
     const raw = localStorage.getItem(STATE_KEY);
@@ -146,6 +158,7 @@ function loadState(): PlannerState {
       hotspots: { ...DEFAULT_HOTSPOTS, ...p.hotspots },
       showArrows: p.showArrows ?? false,
       members: Array.isArray(p.members) ? p.members : [],
+      battle: { at: p.battle?.at ?? null, weekly: p.battle?.weekly ?? false },
     };
   } catch {
     return base;
@@ -211,7 +224,7 @@ export function usePlanner() {
         updateTeam(team, (t) => {
           const assignments = { ...t.assignments };
           delete assignments[id];
-          return { selected: t.selected.filter((s) => s !== id), assignments };
+          return { ...t, selected: t.selected.filter((s) => s !== id), assignments };
         }),
       setLeader: (team: TeamId, id: string, leader: string) =>
         updateAssignment(team, id, (a) => ({ ...a, leader })),
@@ -226,6 +239,25 @@ export function usePlanner() {
         setState((s) => ({ ...s, hotspots: { ...s.hotspots, [id]: { ...s.hotspots[id], x, y } } })),
       resetHotspots: () => setState((s) => ({ ...s, hotspots: { ...DEFAULT_HOTSPOTS } })),
       setShowArrows: (showArrows: boolean) => setState((s) => ({ ...s, showArrows })),
+      setBattle: (battle: BattleSchedule) => setState((s) => ({ ...s, battle })),
+      addReserves: (team: TeamId, names: string[]) =>
+        updateTeam(team, (t) => ({ ...t, reserves: [...t.reserves, ...names] })),
+      updateReserve: (team: TeamId, idx: number, name: string) =>
+        updateTeam(team, (t) => ({ ...t, reserves: t.reserves.map((r, i) => (i === idx ? name : r)) })),
+      removeReserve: (team: TeamId, idx: number) =>
+        updateTeam(team, (t) => ({ ...t, reserves: t.reserves.filter((_, i) => i !== idx) })),
+      /** Move a reserve onto a building as an allied player (selects the building). */
+      promoteReserve: (team: TeamId, idx: number, id: string) =>
+        updateTeam(team, (t) => {
+          const name = t.reserves[idx];
+          if (name === undefined) return t;
+          const a = t.assignments[id] ?? emptyAssignment();
+          return {
+            selected: t.selected.includes(id) ? t.selected : [...t.selected, id],
+            assignments: { ...t.assignments, [id]: { ...a, players: [...a.players, name] } },
+            reserves: t.reserves.filter((_, i) => i !== idx),
+          };
+        }),
       setMembers: (members: string[]) => setState((s) => ({ ...s, members: dedupeNames(members) })),
     }),
     [updateTeam, updateAssignment],
@@ -285,14 +317,21 @@ export const parseNames = (text: string) => dedupeNames(text.split(/[\n,;]+/));
 
 /** Every distinct name in the member list or used as leader/player on either team. */
 export function collectNames(teams: Record<TeamId, TeamPlan>, members: string[] = []): string[] {
-  const used = TEAMS.flatMap((t) => Object.values(teams[t].assignments).flatMap((a) => [a.leader, ...a.players]));
+  const used = TEAMS.flatMap((t) => [
+    ...Object.values(teams[t].assignments).flatMap((a) => [a.leader, ...a.players]),
+    ...teams[t].reserves,
+  ]);
   return dedupeNames([...members, ...used]).sort((x, y) => x.localeCompare(y));
 }
 
-/** Lowercased names placed on a visible (selected) structure in either team. */
+/** Lowercased names placed on a visible (selected) structure or the reserves of either team. */
 export function assignedNames(teams: Record<TeamId, TeamPlan>): Set<string> {
   const out = new Set<string>();
   for (const t of TEAMS) {
+    for (const r of teams[t].reserves) {
+      const c = cleanName(r);
+      if (c) out.add(c.toLowerCase());
+    }
     for (const id of teams[t].selected) {
       const a = teams[t].assignments[id];
       if (!a) continue;
@@ -305,26 +344,28 @@ export function assignedNames(teams: Record<TeamId, TeamPlan>): Set<string> {
   return out;
 }
 
-export interface Placement { team: TeamId; id: string; role: "leader" | "player" }
+export interface Placement { team: TeamId; id: string; role: "leader" | "player" | "reserve" }
 export interface NamePlacements { name: string; placements: Placement[] }
 
 /** Where each name sits on visible (selected) structures, keyed by lowercased name. */
 export function placementsByName(teams: Record<TeamId, TeamPlan>): Map<string, NamePlacements> {
   const out = new Map<string, NamePlacements>();
+  const put = (n: string, p: Placement) => {
+    const c = cleanName(n);
+    if (!c) return;
+    const k = c.toLowerCase();
+    const cur = out.get(k) ?? { name: c, placements: [] };
+    cur.placements.push(p);
+    out.set(k, cur);
+  };
   for (const t of TEAMS) {
     for (const id of teams[t].selected) {
       const a = teams[t].assignments[id];
       if (!a) continue;
-      const entries: [string, Placement["role"]][] = [[a.leader, "leader"], ...a.players.map((p): [string, Placement["role"]] => [p, "player"])];
-      for (const [n, role] of entries) {
-        const c = cleanName(n);
-        if (!c) continue;
-        const k = c.toLowerCase();
-        const cur = out.get(k) ?? { name: c, placements: [] };
-        cur.placements.push({ team: t, id, role });
-        out.set(k, cur);
-      }
+      put(a.leader, { team: t, id, role: "leader" });
+      a.players.forEach((p) => put(p, { team: t, id, role: "player" }));
     }
+    teams[t].reserves.forEach((r) => put(r, { team: t, id: RESERVES_ID, role: "reserve" }));
   }
   return out;
 }
@@ -334,7 +375,9 @@ export const findDuplicates = (m: Map<string, NamePlacements>) =>
   [...m.values()].filter((v) => v.placements.length > 1).sort((a, b) => a.name.localeCompare(b.name));
 
 export const placementLabel = (p: Placement) =>
-  `Team ${p.team} · ${STRUCTURE_BY_ID[p.id]?.name ?? p.id}${p.role === "leader" ? " (leader)" : ""}`;
+  p.role === "reserve"
+    ? `Team ${p.team} · Reserves`
+    : `Team ${p.team} · ${STRUCTURE_BY_ID[p.id]?.name ?? p.id}${p.role === "leader" ? " (leader)" : ""}`;
 
 /** Members not on any building in Team A or Team B. */
 export function unassignedMembers(members: string[], teams: Record<TeamId, TeamPlan>): string[] {

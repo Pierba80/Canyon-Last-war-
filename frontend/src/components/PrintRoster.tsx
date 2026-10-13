@@ -5,10 +5,11 @@ interface Props {
   teams: TeamId[];
   plans: Record<TeamId, TeamPlan>;
   placements: Map<string, NamePlacements>;
+  battle: string | null;
 }
 
 /** Print-only roster sheet (hidden on screen). One page per team, every building listed. */
-export default function PrintRoster({ teams, plans, placements }: Props) {
+export default function PrintRoster({ teams, plans, placements, battle }: Props) {
   const isDup = (n: string) => (placements.get(cleanName(n).toLowerCase())?.placements.length ?? 0) > 1;
   const date = new Date().toLocaleString();
 
@@ -35,6 +36,7 @@ export default function PrintRoster({ teams, plans, placements }: Props) {
                 <h1 className="font-heading text-[24pt] font-black uppercase leading-none tracking-tight">{teamTitle(t)}</h1>
               </div>
               <div className="text-right text-[9pt] text-neutral-700">
+                {battle && <p data-testid="print-battle" className="text-[11pt] font-semibold text-black">Battle: {battle}</p>}
                 <p>{plan.selected.length} of {STRUCTURES.length} buildings deployed · {operatives} operatives</p>
                 <p>{date}</p>
               </div>
@@ -76,7 +78,22 @@ export default function PrintRoster({ teams, plans, placements }: Props) {
                 ))}
               </tbody>
             </table>
-            {hasDup && <p className="mt-3 text-[9pt] text-neutral-700">⚠ = member placed on more than one building (either team).</p>}
+            <div data-testid={`print-reserves-${t.toLowerCase()}`} className="mt-4 break-inside-avoid">
+              <h2 className="border-b border-black pb-1 text-[11pt] font-bold uppercase tracking-wide">Reserves ({plan.reserves.filter((r) => cleanName(r)).length})</h2>
+              <p className="pt-1.5 text-[10pt]">
+                {plan.reserves.map(cleanName).filter(Boolean).length ? (
+                  plan.reserves.map(cleanName).filter(Boolean).map((r, i, arr) => (
+                    <span key={i}>
+                      <Name n={r} dup={isDup(r)} />
+                      {i < arr.length - 1 ? ", " : ""}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-neutral-400">—</span>
+                )}
+              </p>
+            </div>
+            {(hasDup || plan.reserves.some((r) => cleanName(r) && isDup(r))) && <p className="mt-3 text-[9pt] text-neutral-700">⚠ = member placed on more than one building (either team).</p>}
           </section>
         );
       })}
