@@ -1,0 +1,231 @@
+{
+  "theme": "dark",
+  "archetype": "THE PERFORMANCE PRO / HOLOGRAPHIC TACTICAL COMMAND",
+  "entry_surfaces": {
+    "/": "tactical HUD canvas workspace with top holographic team bar, interactive canvas center with pan/zoom/arrows/hotspots, and tactical squad assignment side console/bottom drawer"
+  },
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#060A12",
+        "on_bg": "#E2F1FF",
+        "on_bg_muted": "#8EA7C7",
+        "roles": {
+          "link": "#00E5FF",
+          "error": "#FF3B62",
+          "success": "#00F5A0"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#0B1322",
+        "on_bg": "#E2F1FF",
+        "on_bg_muted": "#7B96B8",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#FF3B62",
+          "success": "#00F5A0"
+        }
+      },
+      {
+        "name": "holographic_card",
+        "kind": "glass",
+        "contrast_against": "#08101E",
+        "guarantee": "backdrop-blur-xl bg-[#091529]/85 border border-[#00E5FF]/30 shadow-[0_0_20px_rgba(0,229,255,0.15)]",
+        "on_bg": "#FFFFFF",
+        "on_bg_muted": "#94B2D7",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#FF5277",
+          "success": "#22C55E"
+        }
+      },
+      {
+        "name": "nameplate_leader",
+        "kind": "solid",
+        "bg": "#002D54",
+        "on_bg": "#38F8FF",
+        "on_bg_muted": "#9FE8FF",
+        "roles": {
+          "link": "#38F8FF",
+          "error": "#FF6B8B",
+          "success": "#4EFEB3"
+        }
+      },
+      {
+        "name": "nameplate_squad",
+        "kind": "solid",
+        "bg": "#071B33",
+        "on_bg": "#E0F2FE",
+        "on_bg_muted": "#7DD3FC",
+        "roles": {
+          "link": "#38BDF8",
+          "error": "#FF6B8B",
+          "success": "#4EFEB3"
+        }
+      },
+      {
+        "name": "hud_header",
+        "kind": "glass",
+        "contrast_against": "#050912",
+        "guarantee": "backdrop-blur-md bg-[#050D1A]/90 border-b border-[#00E5FF]/25",
+        "on_bg": "#F0F9FF",
+        "on_bg_muted": "#819EB8",
+        "roles": {
+          "link": "#00E5FF",
+          "error": "#FF4466",
+          "success": "#10B981"
+        }
+      },
+      {
+        "name": "badge_team_a",
+        "kind": "solid",
+        "bg": "#003A66",
+        "on_bg": "#00E5FF",
+        "on_bg_muted": "#7DD3FC"
+      },
+      {
+        "name": "badge_team_b",
+        "kind": "solid",
+        "bg": "#3D1352",
+        "on_bg": "#E879F9",
+        "on_bg_muted": "#F0ABFC"
+      }
+    ],
+    "accent": "#00E5FF",
+    "on_accent": "#031422",
+    "tactical_cyan": "#00E5FF",
+    "tactical_purple": "#C084FC",
+    "tactical_amber": "#FBBF24",
+    "tactical_crimson": "#FF3B62",
+    "tactical_grid": "#0E243D"
+  },
+  "typography": {
+    "font_heading": "Space Grotesk Variable",
+    "font_sans": "Geist Variable",
+    "font_mono": "JetBrains Mono Variable",
+    "scale_px": {
+      "display": 52,
+      "h1": 40,
+      "h2": 28,
+      "h3": 20,
+      "body": 16,
+      "caption": 14
+    },
+    "typesetting": {
+      "display": "font-black tracking-tight uppercase leading-none font-heading",
+      "h1": "font-extrabold tracking-tight uppercase leading-tight font-heading",
+      "h2": "font-bold tracking-tight font-heading",
+      "h3": "font-semibold tracking-normal font-sans",
+      "body": "font-normal leading-relaxed font-sans",
+      "mono_label": "font-mono text-xs uppercase tracking-[0.2em] font-medium"
+    }
+  },
+  "layout_and_grids": {
+    "philosophy": "Tactical Battle Center with high-density holographic HUD frames, responsive split workspace desktop, and bottom-sheet touch drawer on mobile.",
+    "top_hud_bar": "Fixed header with team toggle tabs (CANYON TEAM A vs CANYON TEAM B), quick tactical stats, autosave status indicator, map replace button, export PNG high-res trigger, and Help Dialog trigger.",
+    "workspace_canvas": "Pan & Zoom viewport with touch gestures (pinch-zoom, multi-touch drag, wheel zoom, zoom controls reset/in/out). Interactive Canvas Layer holding the sci-fi isometric map, SVG tactical trajectory vectors & animated directional arrows, 12 selectable building hotspots, and glowing tactical nameplates.",
+    "building_structures_manifest": [
+      { "id": "power_tower", "name": "Power Tower", "category": "core", "default_pos": { "x": 50, "y": 28 }, "color": "#00E5FF", "icon": "Zap" },
+      { "id": "virus_lab", "name": "Virus Lab", "category": "biohazard", "default_pos": { "x": 50, "y": 72 }, "color": "#10B981", "icon": "FlaskConical" },
+      { "id": "defence_1", "name": "Defence 1 (Alpha)", "category": "defense", "default_pos": { "x": 30, "y": 38 }, "color": "#38BDF8", "icon": "Shield" },
+      { "id": "defence_2", "name": "Defence 2 (Beta)", "category": "defense", "default_pos": { "x": 70, "y": 38 }, "color": "#38BDF8", "icon": "Shield" },
+      { "id": "serum_1", "name": "Serum 1", "category": "resource", "default_pos": { "x": 28, "y": 58 }, "color": "#A78BFA", "icon": "Activity" },
+      { "id": "serum_2", "name": "Serum 2", "category": "resource", "default_pos": { "x": 72, "y": 58 }, "color": "#A78BFA", "icon": "Activity" },
+      { "id": "warehouse_1", "name": "Sample Warehouse 1", "category": "depot", "default_pos": { "x": 38, "y": 48 }, "color": "#FBBF24", "icon": "Package" },
+      { "id": "warehouse_2", "name": "Sample Warehouse 2", "category": "depot", "default_pos": { "x": 62, "y": 48 }, "color": "#FBBF24", "icon": "Package" },
+      { "id": "warehouse_3", "name": "Sample Warehouse 3", "category": "depot", "default_pos": { "x": 42, "y": 62 }, "color": "#FBBF24", "icon": "Package" },
+      { "id": "warehouse_4", "name": "Sample Warehouse 4", "category": "depot", "default_pos": { "x": 58, "y": 62 }, "color": "#FBBF24", "icon": "Package" },
+      { "id": "dawnbreaker_spawn_1", "name": "Dawnbreakers Spawn 1", "category": "spawn", "default_pos": { "x": 16, "y": 50 }, "color": "#FF3B62", "icon": "Crosshair" },
+      { "id": "dawnbreaker_spawn_2", "name": "Dawnbreakers Spawn 2", "category": "spawn", "default_pos": { "x": 84, "y": 50 }, "color": "#FF3B62", "icon": "Crosshair" }
+    ],
+    "sidebar_drawer": "Squad Assignment Console with building quick-filter, squad leader input, multi-player roster management, tactical roles (Assault, Medic, Recon, Heavy, Engineer), quick copy between teams, and clear action with verification dialog.",
+    "tactical_vector_overlay": "Holographic arrows connecting spawn zones to defenses, warehouses, serum caches, virus lab, and central power tower with pulsing dashes and chevron pointers."
+  },
+  "motion": {
+    "transitions": "transition-colors duration-200 ease-out, transition-opacity duration-200 ease-out, transition-transform duration-200 ease-out",
+    "glow_pulse": "animate-pulse (subtle 2s loop on critical hotspots and leader badges)",
+    "holographic_scanlines": "CSS subtle scanline linear-gradient with 0.04 opacity over map workspace",
+    "selection_ring": "Pulsing cyan bounding box with corner crosshairs when a building is selected",
+    "reduced_motion": "Respect prefers-reduced-motion by removing pulsing rings and disabling map pan animations."
+  },
+  "accessibility": {
+    "contrast_guarantee": "All text tokens exceed WCAG AA 4.5:1. Cyan accents are checked against deep obsidian navy backgrounds.",
+    "keyboard_navigation": "Full arrow key and tab navigation between structures, hotspots, and squad assignment form fields.",
+    "aria_roles": "Role='tablist' on Team Switcher, role='region' on Map Canvas with aria-label, role='dialog' on Help and Export previews.",
+    "touch_targets": "Minimum 44x44px for hotspot pins, buttons, and mobile drawer handles."
+  },
+  "image_urls": {
+    "default_battlefield_map": "https://images.unsplash.com/photo-1672872476232-da16b45c9001?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwyfHxmdXR1cmlzdGljJTIwc2NpJTIwZmklMjBjaXR5JTIwbWFwfGVufDB8fHx8MTc5MTg5Mzc5Nnww&ixlib=rb-4.1.0&q=85",
+    "tactical_command_bg": "https://images.unsplash.com/photo-1665602878676-219e01293b51?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwxfHxmdXR1cmlzdGljJTIwc2NpJTIwZmklMjBjaXR5JTIwbWFwfGVufDB8fHx8MTc5MTg5Mzc5Nnww&ixlib=rb-4.1.0&q=85"
+  },
+  "component_architecture": {
+    "main_app": "/app/frontend/src/App.tsx",
+    "components": [
+      {
+        "name": "TacticalHeader",
+        "path": "/app/frontend/src/components/TacticalHeader.tsx",
+        "description": "Top bar showing Team A / Team B toggle, holographic title 'CANYON TEAM A' / 'CANYON TEAM B', export PNG button, map upload button, hotspot edit mode toggle, help modal button, and autosave status badge with timestamp."
+      },
+      {
+        "name": "BattleMapCanvas",
+        "path": "/app/frontend/src/components/BattleMapCanvas.tsx",
+        "description": "Interactive pan/zoom container supporting mouse drag, wheel zoom, pinch-to-zoom on mobile, tactical SVG arrows layer, building hotspot markers with selection rings, and attached glowing blue squad nameplates."
+      },
+      {
+        "name": "TacticalNameplate",
+        "path": "/app/frontend/src/components/TacticalNameplate.tsx",
+        "description": "Holographic glowing blue tag rendered beneath each structure. Shows Squad Leader badge (gold/cyan star + name) and list of assigned Allied Players with count tag. In-place quick editing trigger."
+      },
+      {
+        "name": "AssignmentPanel",
+        "path": "/app/frontend/src/components/AssignmentPanel.tsx",
+        "description": "Desktop side panel and mobile slide-up sheet allowing squad leader input, tag-based player addition/removal, player role assignment, building activation toggle, clear building squad, and team copy/clone tools."
+      },
+      {
+        "name": "TacticalArrowsOverlay",
+        "path": "/app/frontend/src/components/TacticalArrowsOverlay.tsx",
+        "description": "SVG vector paths with animated dashed strokes and arrowheads connecting spawn points to objectives, custom toggleable attack/defense vectors for both teams."
+      },
+      {
+        "name": "HotspotEditorOverlay",
+        "path": "/app/frontend/src/components/HotspotEditorOverlay.tsx",
+        "description": "Draggable pin manager enabled in 'Edit Hotspots' mode. Allows dragging all 12 structure pins to align with user-uploaded custom isometric map images and resetting to defaults."
+      },
+      {
+        "name": "ExportModal",
+        "path": "/app/frontend/src/components/ExportModal.tsx",
+        "description": "Renders high-res 2x/4x PNG tactical briefing export with custom banner title (CANYON TEAM A / B), high-res rasterized map with vector arrows, all glowing nameplates, squad rosters, and direct download."
+      },
+      {
+        "name": "HelpInstructionsDialog",
+        "path": "/app/frontend/src/components/HelpInstructionsDialog.tsx",
+        "description": "Comprehensive tactical briefing modal explaining team navigation, structure selection, leader & squad assignments, zooming & panning, editing hotspot anchors, custom map uploads, and PNG export features."
+      },
+      {
+        "name": "MapUploaderDialog",
+        "path": "/app/frontend/src/components/MapUploaderDialog.tsx",
+        "description": "Allows uploading custom isometric sci-fi battlefield image or switching back to high-res sci-fi defaults, previewing aspect ratio and applying across both Team A and Team B."
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Implement the app in /app/frontend/src/ with strict TypeScript and Tailwind v4 CSS variables in /app/frontend/src/index.css.",
+    "Use @fontsource-variable/space-grotesk for headings and @fontsource-variable/geist for sans body.",
+    "Persist all assignments and custom hotspots in browser localStorage under key 'canyon_tactical_planner_state' with automatic debounced saving and visual 'Autosaved' HUD indicator.",
+    "Ensure both CANYON TEAM A and CANYON TEAM B maintain distinct squad rosters and active structure selections, while sharing the map background image and calibrated hotspot coordinates.",
+    "For High-Resolution PNG export, use html-to-image or direct 2D canvas synthesis to guarantee clean output without missing fonts or cross-origin canvas taint. Include prominent 'CANYON TEAM A' / 'CANYON TEAM B' header and watermark in the exported image.",
+    "Provide a sleek default sci-fi isometric canvas with fallback SVG isometric buildings rendering in case an image fails to load, ensuring zero broken visuals.",
+    "Mobile-first responsive layout: ensure the map canvas fills the viewport with intuitive pinch/pan controls, and the assignment panel morphs into a smooth draggable bottom sheet on screens < 768px.",
+    "Add 'data-testid' attributes to all interactive elements (e.g. data-testid='team-a-tab', data-testid='team-b-tab', data-testid='structure-power-tower', data-testid='export-png-button', data-testid='leader-input', data-testid='add-player-btn')."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "No AI slop or generic corporate cards. Use crisp tactical HUD aesthetic with 1px border lines, corner accents, and cyan glow highlights.",
+    "Ensure every hover and focus state has explicit high-contrast colors.",
+    "Use Sonner for tactical HUD notifications ('Assignments saved', 'Exporting tactical briefing...', 'Hotspot calibration updated').",
+    "All interactive elements must have minimum 44px touch targets on mobile viewports."
+  ]
+}
