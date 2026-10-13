@@ -32,6 +32,10 @@ export default function BattleCountdown({ battle, onChange }: Props) {
     label = "Battle live";
     value = formatCountdown(st.start.getTime() + 60 * 60 * 1000 - now);
     tone = "border-[#FF3B62]/60 text-[#FF6B8B] live-glow";
+  } else if (st.soon) {
+    label = "Starting soon";
+    value = formatCountdown(st.start.getTime() - now);
+    tone = "border-amber-300/70 text-amber-200 soon-glow";
   } else if (st.ended) {
     label = "Battle ended";
     value = formatBattleTime(st.start);

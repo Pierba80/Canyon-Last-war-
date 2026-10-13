@@ -8,6 +8,7 @@ import AssignmentPanel from "@/components/AssignmentPanel";
 import HelpDialog from "@/components/HelpDialog";
 import PrintRoster from "@/components/PrintRoster";
 import BattleCountdown from "@/components/BattleCountdown";
+import BattleReminder from "@/components/BattleReminder";
 import ReservesView from "@/components/ReservesView";
 import { battleLabel } from "@/lib/battle";
 import { Button } from "@/components/ui/button";
@@ -210,6 +211,7 @@ export default function Planner() {
               </p>
             </div>
           </div>
+          <BattleReminder battle={state.battle} />
           {editMode && view === "map" && (
             <div data-testid="edit-mode-banner" className="mx-4 mb-2 flex flex-wrap items-center gap-2 rounded-md border border-amber-300/40 bg-amber-300/10 px-3 py-2 text-xs text-amber-200 sm:mx-6">
               <Move className="size-4" />

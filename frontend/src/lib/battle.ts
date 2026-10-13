@@ -3,11 +3,14 @@ import type { BattleSchedule } from "@/lib/planner";
 
 /** How long a battle shows as "LIVE" after it starts. */
 export const LIVE_MS = 60 * 60 * 1000;
+/** Pre-battle reminder window. */
+export const REMINDER_MS = 15 * 60 * 1000;
 
 export interface BattleStatus {
   start: Date;
   live: boolean;
   ended: boolean; // one-off battle fully past
+  soon: boolean; // within REMINDER_MS before start
 }
 
 /**
@@ -22,7 +25,12 @@ export function battleStatus(b: BattleSchedule, now: number): BattleStatus | nul
     while (now >= start.getTime() + LIVE_MS) start.setDate(start.getDate() + 7);
   }
   const t = start.getTime();
-  return { start, live: now >= t && now < t + LIVE_MS, ended: !b.weekly && now >= t + LIVE_MS };
+  return {
+    start,
+    live: now >= t && now < t + LIVE_MS,
+    ended: !b.weekly && now >= t + LIVE_MS,
+    soon: now < t && t - now <= REMINDER_MS,
+  };
 }
 
 export function formatCountdown(ms: number): string {

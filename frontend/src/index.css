@@ -175,3 +175,17 @@
   .print-page { break-after: page; }
   .print-page:last-child { break-after: auto; }
 }
+
+.soon-glow { animation: soon-glow 1.6s ease-in-out infinite; }
+@keyframes soon-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(251, 191, 36, 0.35); }
+  50% { box-shadow: 0 0 18px rgba(251, 191, 36, 0.8); }
+}
+@keyframes reminder-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reminder-in { animation: reminder-in 260ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .soon-glow, .reminder-in { animation: none; }
+}
