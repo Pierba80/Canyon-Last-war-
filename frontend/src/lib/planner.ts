@@ -244,3 +244,27 @@ export function useMapImage() {
 }
 
 export const cleanName = (s: string) => s.trim();
+
+/** Every distinct name used as a leader or player across both teams (case-insensitive dedupe). */
+export function collectNames(teams: Record<TeamId, TeamPlan>): string[] {
+  const seen = new Map<string, string>();
+  for (const t of TEAMS) {
+    for (const a of Object.values(teams[t].assignments)) {
+      for (const n of [a.leader, ...a.players]) {
+        const c = cleanName(n);
+        if (c && !seen.has(c.toLowerCase())) seen.set(c.toLowerCase(), c);
+      }
+    }
+  }
+  return [...seen.values()].sort((x, y) => x.localeCompare(y));
+}
+
+/** Names matching the query (prefix matches first), excluding names already used here. */
+export function suggestNames(all: string[], query: string, exclude: string[], limit = 6): string[] {
+  const q = cleanName(query).toLowerCase();
+  if (!q) return [];
+  const ex = new Set(exclude.map((e) => cleanName(e).toLowerCase()));
+  const hits = all.filter((n) => !ex.has(n.toLowerCase()) && n.toLowerCase().includes(q));
+  hits.sort((a, b) => Number(!a.toLowerCase().startsWith(q)) - Number(!b.toLowerCase().startsWith(q)));
+  return hits.slice(0, limit);
+}

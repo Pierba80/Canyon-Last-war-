@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, UserMinus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, teamTitle } from "@/lib/planner";
+import { STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, suggestNames, teamTitle } from "@/lib/planner";
 import type { PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
 
 interface Props {
@@ -16,16 +16,17 @@ interface Props {
   focusedId: string | null;
   onFocus: (id: string | null) => void;
   actions: PlannerActions;
+  knownNames: string[];
 }
 
-export default function AssignmentPanel({ team, plan, focusedId, onFocus, actions }: Props) {
+export default function AssignmentPanel({ team, plan, focusedId, onFocus, actions, knownNames }: Props) {
   if (focusedId && STRUCTURE_BY_ID[focusedId]) {
-    return <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} />;
+    return <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} />;
   }
   return <Roster team={team} plan={plan} onFocus={onFocus} actions={actions} />;
 }
 
-function Roster({ team, plan, onFocus, actions }: Omit<Props, "focusedId">) {
+function Roster({ team, plan, onFocus, actions }: Omit<Props, "focusedId" | "knownNames">) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const operatives = plan.selected.reduce((n, id) => {
     const a = plan.assignments[id];
@@ -134,19 +135,29 @@ function Stat({ label, value, testId }: { label: string; value: string; testId: 
   );
 }
 
-function Editor({ team, plan, id, onFocus, actions }: Omit<Props, "focusedId"> & { id: string }) {
+function Editor({ team, plan, id, onFocus, actions, knownNames }: Omit<Props, "focusedId"> & { id: string }) {
   const def = STRUCTURE_BY_ID[id];
   const a = plan.assignments[id] ?? emptyAssignment();
   const selected = plan.selected.includes(id);
   const [draft, setDraft] = useState("");
+  const [leaderFocus, setLeaderFocus] = useState(false);
+  const [playerFocus, setPlayerFocus] = useState(false);
+  const playerRef = useRef<HTMLInputElement>(null);
 
-  const add = () => {
-    const names = draft.split(",").map(cleanName).filter(Boolean);
+  const segments = draft.split(",");
+  const pending = segments.slice(0, -1).map(cleanName).filter(Boolean);
+  const leaderHits = leaderFocus ? suggestNames(knownNames, a.leader, [a.leader, ...a.players]) : [];
+  const playerHits = playerFocus
+    ? suggestNames(knownNames, segments[segments.length - 1], [a.leader, ...a.players, ...pending])
+    : [];
+
+  const addNames = (names: string[]) => {
     if (!names.length) return;
     if (!selected) actions.select(team, id);
     names.forEach((n) => actions.addPlayer(team, id, n));
     setDraft("");
   };
+  const add = () => addNames(draft.split(",").map(cleanName).filter(Boolean));
 
   return (
     <div className="flex h-full flex-col" data-testid="assignment-editor">
@@ -176,11 +187,23 @@ function Editor({ team, plan, id, onFocus, actions }: Omit<Props, "focusedId"> &
             data-testid="leader-input"
             placeholder="Leader name"
             value={a.leader}
+            autoComplete="off"
+            onFocus={() => setLeaderFocus(true)}
+            onBlur={() => setLeaderFocus(false)}
             onChange={(e) => {
               if (!selected) actions.select(team, id);
               actions.setLeader(team, id, e.target.value);
             }}
             className="h-11 border-[#38F8FF]/40 bg-[#002D54]/50 font-heading text-base font-semibold text-[#38F8FF] placeholder:text-[#5B7A9C]"
+          />
+          <Suggestions
+            testId="leader-suggestions"
+            names={leaderHits}
+            onPick={(n) => {
+              if (!selected) actions.select(team, id);
+              actions.setLeader(team, id, n);
+              setLeaderFocus(false);
+            }}
           />
         </div>
 
@@ -199,7 +222,11 @@ function Editor({ team, plan, id, onFocus, actions }: Omit<Props, "focusedId"> &
               id="player-input"
               data-testid="player-input"
               placeholder="Name (comma for several)"
+              ref={playerRef}
               value={draft}
+              autoComplete="off"
+              onFocus={() => setPlayerFocus(true)}
+              onBlur={() => setPlayerFocus(false)}
               onChange={(e) => setDraft(e.target.value)}
               className="h-11 bg-[#071B33]/70"
             />
@@ -207,6 +234,14 @@ function Editor({ team, plan, id, onFocus, actions }: Omit<Props, "focusedId"> &
               <Plus className="size-4" /> Add
             </Button>
           </form>
+          <Suggestions
+            testId="player-suggestions"
+            names={playerHits}
+            onPick={(n) => {
+              addNames([...pending, n]);
+              playerRef.current?.focus();
+            }}
+          />
           <ul className="space-y-1.5 pt-1" data-testid="player-list">
             {a.players.map((p, i) => (
               <li key={i} className="flex items-center gap-2">
@@ -256,6 +291,27 @@ function Editor({ team, plan, id, onFocus, actions }: Omit<Props, "focusedId"> &
           <Check className="size-4" /> Done
         </Button>
       </div>
+    </div>
+  );
+}
+
+/** Tappable chips of previously used alliance names. mousedown is cancelled so the input keeps focus. */
+function Suggestions({ names, onPick, testId }: { names: string[]; onPick: (n: string) => void; testId: string }) {
+  if (!names.length) return null;
+  return (
+    <div data-testid={testId} className="flex flex-wrap items-center gap-1.5 pt-0.5" onMouseDown={(e) => e.preventDefault()}>
+      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#5B7A9C]">Used before</span>
+      {names.map((n) => (
+        <button
+          key={n}
+          type="button"
+          data-testid={`${testId}-item-${n.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+          onClick={() => onPick(n)}
+          className="min-h-8 rounded-sm border border-[#38F8FF]/35 bg-[#002D54]/60 px-2.5 text-xs font-medium text-[#9FE8FF] transition-[background-color,border-color,color] duration-150 ease-out hover:border-[#38F8FF] hover:bg-[#003A66] hover:text-white"
+        >
+          {n}
+        </button>
+      ))}
     </div>
   );
 }
