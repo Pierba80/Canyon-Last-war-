@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TEAMS, collectNames, teamTitle, useMapImage, usePlanner } from "@/lib/planner";
+import { TEAMS, collectNames, teamTitle, unassignedMembers, useMapImage, usePlanner } from "@/lib/planner";
 import type { TeamId } from "@/lib/planner";
 import { exportTeamPlan, fileToDataUrl } from "@/lib/mapCanvas";
 
@@ -39,7 +39,9 @@ export default function Planner() {
   const [exporting, setExporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const plan = state.teams[team];
-  const knownNames = useMemo(() => collectNames(state.teams), [state.teams]);
+  const knownNames = useMemo(() => collectNames(state.teams, state.members), [state.teams, state.members]);
+  const usedNames = useMemo(() => collectNames(state.teams), [state.teams]);
+  const unassigned = useMemo(() => unassignedMembers(state.members, state.teams), [state.members, state.teams]);
 
   const switchTeam = (t: TeamId) => {
     setTeam(t);
@@ -82,7 +84,7 @@ export default function Planner() {
     }
   };
 
-  const panel = <AssignmentPanel team={team} plan={plan} focusedId={focusedId} onFocus={(id) => { setFocusedId(id); if (!id && !isDesktop) setSheetOpen(false); }} actions={actions} knownNames={knownNames} />;
+  const panel = <AssignmentPanel team={team} plan={plan} focusedId={focusedId} onFocus={(id) => { setFocusedId(id); if (!id && !isDesktop) setSheetOpen(false); }} actions={actions} knownNames={knownNames} members={state.members} unassigned={unassigned} usedNames={usedNames} />;
 
   return (
     <div className="flex h-dvh flex-col bg-[#060A12] text-[#E2F1FF]">

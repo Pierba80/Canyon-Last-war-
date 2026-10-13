@@ -1,13 +1,16 @@
 import { useRef, useState } from "react";
-import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, UserMinus, Users } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, UserMinus, UserRoundX, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, suggestNames, teamTitle } from "@/lib/planner";
+import {
+  STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, suggestNames, teamTitle,
+} from "@/lib/planner";
 import type { PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
 
 interface Props {
@@ -17,17 +20,25 @@ interface Props {
   onFocus: (id: string | null) => void;
   actions: PlannerActions;
   knownNames: string[];
+  members: string[];
+  unassigned: string[];
+  /** Every name already on a visible building (either team) — used to offer importing them as members. */
+  usedNames: string[];
 }
 
-export default function AssignmentPanel({ team, plan, focusedId, onFocus, actions, knownNames }: Props) {
+export default function AssignmentPanel(props: Props) {
+  const { team, plan, focusedId, onFocus, actions, knownNames, unassigned } = props;
   if (focusedId && STRUCTURE_BY_ID[focusedId]) {
-    return <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} />;
+    return (
+      <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} unassigned={unassigned} />
+    );
   }
-  return <Roster team={team} plan={plan} onFocus={onFocus} actions={actions} />;
+  return <Roster {...props} />;
 }
 
-function Roster({ team, plan, onFocus, actions }: Omit<Props, "focusedId" | "knownNames">) {
+function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
   const operatives = plan.selected.reduce((n, id) => {
     const a = plan.assignments[id];
     return n + (a ? a.players.filter((p) => p.trim()).length + (a.leader.trim() ? 1 : 0) : 0);
@@ -44,6 +55,7 @@ function Roster({ team, plan, onFocus, actions }: Omit<Props, "focusedId" | "kno
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-3">
+        <MembersSummary members={members} unassigned={unassigned} onManage={() => setMembersOpen(true)} />
         <p className="px-2 pb-2 text-xs text-[#8EA7C7]">Tap a structure on the map or below to deploy a squad.</p>
         <ul className="space-y-1">
           {STRUCTURES.map((s) => {
@@ -100,6 +112,18 @@ function Roster({ team, plan, onFocus, actions }: Omit<Props, "focusedId" | "kno
           <Trash2 className="size-4" /> Clear {teamTitle(team)} plan
         </Button>
       </div>
+      <MembersDialog
+        key={membersOpen ? "open" : "closed"}
+        open={membersOpen}
+        onOpenChange={setMembersOpen}
+        members={members}
+        usedNames={usedNames}
+        onSave={(list) => {
+          actions.setMembers(list);
+          setMembersOpen(false);
+          toast.success(`Alliance list saved (${list.length} members)`);
+        }}
+      />
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent data-testid="clear-team-dialog">
           <DialogHeader>
@@ -126,6 +150,80 @@ function Roster({ team, plan, onFocus, actions }: Omit<Props, "focusedId" | "kno
   );
 }
 
+function MembersSummary({ members, unassigned, onManage }: { members: string[]; unassigned: string[]; onManage: () => void }) {
+  const done = members.length > 0 && unassigned.length === 0;
+  return (
+    <section data-testid="unassigned-section" className="mb-3 rounded-md border border-[#00E5FF]/20 bg-[#060A12]/60 p-3">
+      <div className="flex items-center gap-2">
+        <UserRoundX className={`size-4 ${unassigned.length ? "text-amber-300" : "text-[#00F5A0]"}`} />
+        <p className="flex-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[#7DD3FC]">Unassigned members</p>
+        <span data-testid="unassigned-count" className={`font-heading text-sm font-bold ${unassigned.length ? "text-amber-300" : "text-[#00F5A0]"}`}>
+          {members.length ? `${unassigned.length}/${members.length}` : "—"}
+        </span>
+      </div>
+      {members.length === 0 ? (
+        <p className="mt-2 text-xs text-[#8EA7C7]">Add your alliance member list to see who isn't on a building yet in either team.</p>
+      ) : done ? (
+        <p data-testid="all-assigned-msg" className="mt-2 text-xs text-[#00F5A0]">Everyone is deployed across Team A and Team B.</p>
+      ) : (
+        <ul data-testid="unassigned-list" className="mt-2 flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+          {unassigned.map((n) => (
+            <li key={n} data-testid={`unassigned-member-${slug(n)}`} className="rounded-sm border border-amber-300/30 bg-amber-300/[0.07] px-2 py-0.5 text-xs text-amber-100">
+              {n}
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button variant="ghost" size="sm" data-testid="manage-members-btn" onClick={onManage} className="mt-2 h-8 px-2 text-xs text-[#38F8FF] hover:bg-[#00E5FF]/10">
+        <Users className="size-3.5" /> {members.length ? "Edit member list" : "Add member list"}
+      </Button>
+    </section>
+  );
+}
+
+function MembersDialog({ open, onOpenChange, members, usedNames, onSave }: {
+  open: boolean; onOpenChange: (o: boolean) => void; members: string[]; usedNames: string[]; onSave: (list: string[]) => void;
+}) {
+  const [text, setText] = useState(members.join("\n"));
+  const count = parseNames(text).length;
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent data-testid="members-dialog" className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-heading uppercase tracking-tight">Alliance members</DialogTitle>
+          <DialogDescription>Paste one name per line, or separate names with commas. Shared by Team A and Team B.</DialogDescription>
+        </DialogHeader>
+        <Textarea
+          data-testid="members-textarea"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={"Commander Rex\nNova\nBlaze"}
+          className="min-h-48 bg-[#071B33]/70 font-sans text-sm"
+        />
+        <div className="flex items-center justify-between gap-2">
+          <span data-testid="members-count" className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#7B96B8]">{count} names</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            data-testid="import-used-names-btn"
+            disabled={usedNames.length === 0}
+            onClick={() => setText(parseNames(`${text}\n${usedNames.join("\n")}`).join("\n"))}
+            className="text-xs text-[#38F8FF] hover:bg-[#00E5FF]/10"
+          >
+            <Plus className="size-3.5" /> Add names already on the map
+          </Button>
+        </div>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" data-testid="members-cancel-btn" />}>Cancel</DialogClose>
+          <Button data-testid="members-save-btn" onClick={() => onSave(parseNames(text))}>Save list</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const slug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
 function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
   return (
     <div className="rounded-md border border-[#00E5FF]/15 bg-[#060A12]/60 px-3 py-2">
@@ -135,7 +233,7 @@ function Stat({ label, value, testId }: { label: string; value: string; testId: 
   );
 }
 
-function Editor({ team, plan, id, onFocus, actions, knownNames }: Omit<Props, "focusedId"> & { id: string }) {
+function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "unassigned"> & { id: string }) {
   const def = STRUCTURE_BY_ID[id];
   const a = plan.assignments[id] ?? emptyAssignment();
   const selected = plan.selected.includes(id);
@@ -242,6 +340,14 @@ function Editor({ team, plan, id, onFocus, actions, knownNames }: Omit<Props, "f
               playerRef.current?.focus();
             }}
           />
+          {!draft.trim() && unassigned.length > 0 && (
+            <Suggestions
+              testId="unassigned-suggestions"
+              label="Unassigned"
+              names={unassigned.slice(0, 12)}
+              onPick={(n) => addNames([n])}
+            />
+          )}
           <ul className="space-y-1.5 pt-1" data-testid="player-list">
             {a.players.map((p, i) => (
               <li key={i} className="flex items-center gap-2">
@@ -296,16 +402,16 @@ function Editor({ team, plan, id, onFocus, actions, knownNames }: Omit<Props, "f
 }
 
 /** Tappable chips of previously used alliance names. mousedown is cancelled so the input keeps focus. */
-function Suggestions({ names, onPick, testId }: { names: string[]; onPick: (n: string) => void; testId: string }) {
+function Suggestions({ names, onPick, testId, label = "Used before" }: { names: string[]; onPick: (n: string) => void; testId: string; label?: string }) {
   if (!names.length) return null;
   return (
     <div data-testid={testId} className="flex flex-wrap items-center gap-1.5 pt-0.5" onMouseDown={(e) => e.preventDefault()}>
-      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#5B7A9C]">Used before</span>
+      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#5B7A9C]">{label}</span>
       {names.map((n) => (
         <button
           key={n}
           type="button"
-          data-testid={`${testId}-item-${n.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+          data-testid={`${testId}-item-${slug(n)}`}
           onClick={() => onPick(n)}
           className="min-h-8 rounded-sm border border-[#38F8FF]/35 bg-[#002D54]/60 px-2.5 text-xs font-medium text-[#9FE8FF] transition-[background-color,border-color,color] duration-150 ease-out hover:border-[#38F8FF] hover:bg-[#003A66] hover:text-white"
         >

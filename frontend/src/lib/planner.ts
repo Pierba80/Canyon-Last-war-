@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Logical stage width (px) — the map is laid out in this coordinate space, then scaled. */
 export const STAGE_W = 600;
@@ -37,6 +37,8 @@ export interface PlannerState {
   teams: Record<TeamId, TeamPlan>;
   hotspots: Record<string, Hotspot>;
   showArrows: boolean;
+  /** Alliance member list, shared by both teams. */
+  members: string[];
 }
 
 export const STRUCTURES: StructureDef[] = [
@@ -130,6 +132,7 @@ function loadState(): PlannerState {
     teams: { A: emptyTeam(), B: emptyTeam() },
     hotspots: { ...DEFAULT_HOTSPOTS },
     showArrows: false,
+    members: [],
   };
   try {
     const raw = localStorage.getItem(STATE_KEY);
@@ -142,6 +145,7 @@ function loadState(): PlannerState {
       },
       hotspots: { ...DEFAULT_HOTSPOTS, ...p.hotspots },
       showArrows: p.showArrows ?? false,
+      members: Array.isArray(p.members) ? p.members : [],
     };
   } catch {
     return base;
@@ -163,6 +167,26 @@ export function usePlanner() {
     }, 300);
     return () => clearTimeout(t);
   }, [state]);
+
+  // Flush immediately on reload/close/tab-hide so a change inside the debounce window is never lost.
+  const latest = useRef(state);
+  latest.current = state;
+  useEffect(() => {
+    const flush = () => {
+      try {
+        localStorage.setItem(STATE_KEY, JSON.stringify(latest.current));
+      } catch {
+        /* ignore */
+      }
+    };
+    const onVis = () => document.visibilityState === "hidden" && flush();
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, []);
 
   const updateTeam = useCallback((team: TeamId, fn: (t: TeamPlan) => TeamPlan) => {
     setState((s) => ({ ...s, teams: { ...s.teams, [team]: fn(s.teams[team]) } }));
@@ -202,6 +226,7 @@ export function usePlanner() {
         setState((s) => ({ ...s, hotspots: { ...s.hotspots, [id]: { ...s.hotspots[id], x, y } } })),
       resetHotspots: () => setState((s) => ({ ...s, hotspots: { ...DEFAULT_HOTSPOTS } })),
       setShowArrows: (showArrows: boolean) => setState((s) => ({ ...s, showArrows })),
+      setMembers: (members: string[]) => setState((s) => ({ ...s, members: dedupeNames(members) })),
     }),
     [updateTeam, updateAssignment],
   );
@@ -245,18 +270,45 @@ export function useMapImage() {
 
 export const cleanName = (s: string) => s.trim();
 
-/** Every distinct name used as a leader or player across both teams (case-insensitive dedupe). */
-export function collectNames(teams: Record<TeamId, TeamPlan>): string[] {
+/** Trim + case-insensitive dedupe, keeping first spelling and order. */
+export function dedupeNames(names: string[]): string[] {
   const seen = new Map<string, string>();
+  for (const n of names) {
+    const c = cleanName(n);
+    if (c && !seen.has(c.toLowerCase())) seen.set(c.toLowerCase(), c);
+  }
+  return [...seen.values()];
+}
+
+/** Split pasted text (newlines or commas) into names. */
+export const parseNames = (text: string) => dedupeNames(text.split(/[\n,;]+/));
+
+/** Every distinct name in the member list or used as leader/player on either team. */
+export function collectNames(teams: Record<TeamId, TeamPlan>, members: string[] = []): string[] {
+  const used = TEAMS.flatMap((t) => Object.values(teams[t].assignments).flatMap((a) => [a.leader, ...a.players]));
+  return dedupeNames([...members, ...used]).sort((x, y) => x.localeCompare(y));
+}
+
+/** Lowercased names placed on a visible (selected) structure in either team. */
+export function assignedNames(teams: Record<TeamId, TeamPlan>): Set<string> {
+  const out = new Set<string>();
   for (const t of TEAMS) {
-    for (const a of Object.values(teams[t].assignments)) {
+    for (const id of teams[t].selected) {
+      const a = teams[t].assignments[id];
+      if (!a) continue;
       for (const n of [a.leader, ...a.players]) {
         const c = cleanName(n);
-        if (c && !seen.has(c.toLowerCase())) seen.set(c.toLowerCase(), c);
+        if (c) out.add(c.toLowerCase());
       }
     }
   }
-  return [...seen.values()].sort((x, y) => x.localeCompare(y));
+  return out;
+}
+
+/** Members not on any building in Team A or Team B. */
+export function unassignedMembers(members: string[], teams: Record<TeamId, TeamPlan>): string[] {
+  const used = assignedNames(teams);
+  return members.filter((m) => !used.has(m.toLowerCase()));
 }
 
 /** Names matching the query (prefix matches first), excluding names already used here. */
