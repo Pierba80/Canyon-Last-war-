@@ -4,7 +4,7 @@ Frontend-only tactical planner (no backend features; FastAPI skeleton untouched)
 
 ## What it does
 - Two identical maps (same image, same hotspot positions) under tabs TEAM A / TEAM B; big title "CANYON TEAM A"/"CANYON TEAM B".
-- Default map image: `frontend/public/canyon-map.jpg` (user's original 759x1024). Upload/replace via Map menu (shared by both teams, stored as data URL in localStorage `canyon_tactical_planner_map_v1`); "Restore original map".
+- Default map image: `frontend/public/canyon-map-pod.jpg` (user original 759x1024 with the 14:32 holo-clock replaced by "POD"; untouched original at `frontend/canyon-map.original.jpg`, regenerate via `python /app/scripts/replace_clock.py`). Upload/replace via Map menu (shared by both teams, stored as data URL in localStorage `canyon_tactical_planner_map_v1`); "Restore original map".
 - 12 structures (`src/lib/planner.ts` STRUCTURES/DEFAULT_HOTSPOTS, % coords): power_tower, virus_lab, defence_1/2, serum_1/2, warehouse_1..4, spawn_1/2.
 - Click a zone → selects it for current team + opens editor (desktop right panel; mobile bottom sheet). One leader + many players (comma adds several). Nameplate (glowing blue box) renders below selected structures; click nameplate to edit.
 - Name autocomplete: leader + player inputs show "Used before" chips (`collectNames`/`suggestNames` in planner.ts) from all names across BOTH teams; excludes names already on that structure; prefix matches first, max 6. Picking a player chip adds it (plus any comma names typed before it).

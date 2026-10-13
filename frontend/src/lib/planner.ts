@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /** Logical stage width (px) — the map is laid out in this coordinate space, then scaled. */
 export const STAGE_W = 600;
-export const DEFAULT_MAP_SRC = "/canyon-map.jpg";
+export const DEFAULT_MAP_SRC = "/canyon-map-pod.jpg";
 export const DEFAULT_MAP_RATIO = 1024 / 759; // height / width of the bundled map
 
 export type TeamId = "A" | "B";
