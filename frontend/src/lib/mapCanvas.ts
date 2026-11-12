@@ -1,8 +1,9 @@
 import {
-  ARROWS, FONT_HEADING, FONT_MONO, FONT_SANS, PLATE, STAGE_W, STRUCTURES, arrowGeom, plateAnchor,
+  FONT_HEADING, FONT_MONO, FONT_SANS, PLATE, ROUTES, ROUTE_STYLE, STAGE_W, STRUCTURES, isRouteVisible, plateAnchor,
+  plateLeft, routeGeom,
   teamTitle,
 } from "@/lib/planner";
-import type { Assignment, Hotspot, TeamId, TeamPlan } from "@/lib/planner";
+import type { Assignment, Hotspot, PlateOffset, TeamId, TeamPlan } from "@/lib/planner";
 
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -65,17 +66,17 @@ function layoutPlate(ctx: CanvasRenderingContext2D, ax: number, ay: number, line
   }
   w = Math.min(PLATE.maxW, Math.max(PLATE.minW, w + PLATE.padX * 2));
   const h = PLATE.padY * 2 + lines.reduce((s, l) => s + l.size * PLATE.lh, 0);
-  return { x: ax - w / 2, y: ay, w, h, lines };
+  return { x: plateLeft(ax, w), y: ay, w, h, lines };
 }
 
 const HEADER_H = 72;
 const FOOTER_H = 22;
 
 export async function exportTeamPlan(opts: {
-  team: TeamId; imageSrc: string; hotspots: Record<string, Hotspot>; plan: TeamPlan; showArrows: boolean;
-  battle: string | null;
+  team: TeamId; imageSrc: string; hotspots: Record<string, Hotspot>; plateOffsets: Record<string, PlateOffset>;
+  plan: TeamPlan; routeVisibility: Record<string, boolean>; battle: string | null;
 }) {
-  const { team, imageSrc, hotspots, plan, showArrows, battle } = opts;
+  const { team, imageSrc, hotspots, plateOffsets, plan, routeVisibility, battle } = opts;
   await Promise.all([
     document.fonts.load(`900 30px ${FONT_HEADING}`),
     document.fonts.load(`700 10px ${FONT_HEADING}`),
@@ -94,7 +95,7 @@ export async function exportTeamPlan(opts: {
   const selected = STRUCTURES.filter((s) => plan.selected.includes(s.id) && hotspots[s.id]);
   const plates = selected.map((s) => {
     const a = plan.assignments[s.id] ?? { leader: "", players: [] };
-    const anchor = plateAnchor(hotspots[s.id], s);
+    const anchor = plateAnchor(hotspots[s.id], plateOffsets[s.id]);
     return layoutPlate(ctx, (anchor.x / 100) * STAGE_W, (anchor.y / 100) * stageH, plateLines(s.name, a));
   });
   const contentH = Math.max(stageH, ...plates.map((p) => p.y + p.h + 8));
@@ -170,32 +171,34 @@ export async function exportTeamPlan(opts: {
   ctx.translate(0, HEADER_H);
   ctx.drawImage(img, 0, 0, STAGE_W, stageH);
 
-  if (showArrows) {
-    for (const [f, t] of ARROWS) {
-      if (!hotspots[f] || !hotspots[t]) continue;
-      const a = arrowGeom(hotspots[f], hotspots[t], stageH);
-      ctx.save();
-      ctx.shadowColor = "rgba(0,229,255,0.9)";
-      ctx.shadowBlur = 6;
-      ctx.strokeStyle = "rgba(0,229,255,0.9)";
-      ctx.lineWidth = 2.2;
-      ctx.setLineDash([8, 6]);
-      ctx.beginPath();
-      ctx.moveTo(a.x1, a.y1);
-      ctx.quadraticCurveTo(a.cx, a.cy, a.x2, a.y2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = "#00E5FF";
-      ctx.translate(a.x2, a.y2);
-      ctx.rotate(a.angle);
-      ctx.beginPath();
-      ctx.moveTo(4, 0);
-      ctx.lineTo(-7, -5);
-      ctx.lineTo(-7, 5);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
+  // Only the routes currently visible for this team
+  for (const r of ROUTES) {
+    if (!isRouteVisible(routeVisibility, r.id) || !hotspots[r.from] || !hotspots[r.to]) continue;
+    const a = routeGeom(r, hotspots[r.from], hotspots[r.to], stageH);
+    ctx.save();
+    ctx.shadowColor = r.color;
+    ctx.shadowBlur = ROUTE_STYLE.glow * 1.5;
+    ctx.strokeStyle = r.color;
+    ctx.lineWidth = ROUTE_STYLE.width;
+    ctx.lineCap = "round";
+    ctx.setLineDash(ROUTE_STYLE.dash);
+    ctx.beginPath();
+    ctx.moveTo(a.x1, a.y1);
+    ctx.quadraticCurveTo(a.cx, a.cy, a.x2, a.y2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = r.color;
+    ctx.translate(a.x2, a.y2);
+    ctx.rotate(a.angle);
+    const hd = ROUTE_STYLE.head;
+    ctx.beginPath();
+    ctx.moveTo(hd * 0.5, 0);
+    ctx.lineTo(-hd, -hd * 0.6);
+    ctx.lineTo(-hd * 0.6, 0);
+    ctx.lineTo(-hd, hd * 0.6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   // Selected zones

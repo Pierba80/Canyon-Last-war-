@@ -1,32 +1,51 @@
-import { FONT_HEADING, FONT_MONO, FONT_SANS, PLATE } from "@/lib/planner";
+import { useLayoutEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { FONT_HEADING, FONT_MONO, FONT_SANS, PLATE, STAGE_W, plateLeft } from "@/lib/planner";
 import type { Assignment } from "@/lib/planner";
 
 interface Props {
   id: string;
   name: string;
   assignment: Assignment;
-  x: number; // % left
-  y: number; // % top
+  x: number; // anchor center, % of stage width
+  y: number; // top, % of stage height
   focused: boolean;
+  editMode: boolean;
   onClick: () => void;
+  onDragStart: (e: ReactPointerEvent) => void;
 }
 
 /** Glowing nameplate on the map. Sizes are logical stage px, mirrored by the canvas export. */
-export default function Nameplate({ id, name, assignment, x, y, focused, onClick }: Props) {
+export default function Nameplate({ id, name, assignment, x, y, focused, editMode, onClick, onDragStart }: Props) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [w, setW] = useState<number>(PLATE.minW);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    setW(el.offsetWidth);
+    const ro = new ResizeObserver(() => setW(el.offsetWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const leader = assignment.leader.trim();
   const players = assignment.players.map((p) => p.trim()).filter(Boolean);
   return (
     <button
+      ref={ref}
       type="button"
       data-testid={`nameplate-${id}`}
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        if (!editMode) onClick();
       }}
-      onPointerDown={(e) => e.stopPropagation()}
-      className={`np-glow absolute z-20 -translate-x-1/2 cursor-pointer text-center transition-[box-shadow,transform] duration-200 ease-out hover:scale-[1.04] ${focused ? "np-focused" : ""}`}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        if (editMode) onDragStart(e);
+      }}
+      className={`np-glow absolute z-20 text-center transition-[box-shadow,transform] duration-200 ease-out ${editMode ? "cursor-move outline-1 outline-dashed outline-offset-2 outline-amber-300/90" : "cursor-pointer hover:scale-[1.04]"} ${focused ? "np-focused" : ""}`}
       style={{
-        left: `${x}%`,
+        left: plateLeft((x / 100) * STAGE_W, w),
         top: `${y}%`,
         minWidth: PLATE.minW,
         maxWidth: PLATE.maxW,
@@ -34,7 +53,7 @@ export default function Nameplate({ id, name, assignment, x, y, focused, onClick
         borderRadius: PLATE.radius,
         lineHeight: PLATE.lh,
       }}
-      aria-label={`Edit ${name} assignment`}
+      aria-label={editMode ? `Drag ${name} nameplate` : `Edit ${name} assignment`}
     >
       <span
         className="block truncate uppercase text-[#7DD3FC]"

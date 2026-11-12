@@ -1,0 +1,62 @@
+{
+  "iteration": 1,
+  "app": "canyon-tactical-planner (frontend-only)",
+  "summary": "6 browser checks covering the 6 acceptance criteria. 1 failed (genuine bug): warehouse nameplates overlap the DAWNBREAKERS SPAWN AREA printed labels when all 14 structures are selected on Team A. All other criteria (zoom toolbar placement, selection square centering, stale layout migration, edit-layout drag/reset/persist, core assignment flow + team independence + PNG export) passed. No backend/API-bearing criteria exist in this frontend-only app (confirmed via /app/memory/SPEC.md: 'Auth: None', FastAPI skeleton untouched) so no backend test files were required.",
+  "passed": 5,
+  "failed": 1,
+  "checks": [
+    {
+      "criterion": "Reported bug 1: nameplates must not cover the building's printed name on the map",
+      "name": "nameplates-dont-cover-labels",
+      "lane": "browser",
+      "status": "failed",
+      "evidence": "With all 14 Team A structures selected (leader+2 players each) at 1440x900, computed nameplate bounding boxes intersect the printed label rects given in the briefing: 'warehouse_1 overlaps spawn_1_lbl, warehouse_2 overlaps spawn_1_lbl, warehouse_3 overlaps spawn_2_lbl, warehouse_4 overlaps spawn_2_lbl'. Screenshot confirms the warehouse nameplate's leader/player text block sits directly above and touches the 'DAWNBREAKERS SPAWN AREA' printed label row. Screenshot: nameplates-dont-cover-labels-1440x900.png / -failure.png."
+    },
+    {
+      "criterion": "Reported bug 2: zoom tool on the right must not overlay the map",
+      "name": "zoom-toolbar-below-workspace",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "At 1440x900 and 390x844, data-testid map-toolbar bounding box top (y) is >= map-workspace bottom edge on both viewports (no overlap). zoom-in-btn click changed zoom-level text; zoom-reset-btn restored Fit view without errors."
+    },
+    {
+      "criterion": "Reported bug 3: selection squares centered on buildings",
+      "name": "selection-squares-centered-on-buildings",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Clicked each of the 14 structure-<id> elements; computed selection-box center as % of map-image bounding box for each matched the briefing's expected centers within ±1.5% tolerance (e.g. power_tower (59.3,33.6), virus_lab (38,60.5), warehouse_1..4 y=79.7). Screenshot all-selected shows all 14 cyan selection squares visually centered on their buildings."
+    },
+    {
+      "criterion": "Stale saved layouts are migrated",
+      "name": "stale-layout-migrated-on-load",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Seeded localStorage with layoutVersion:1 and custom hotspots pinned at (1%,1%) plus Team A assignments on power_tower/virus_lab. After load: nameplate-leader-power_tower contains 'tscheck-stale-leader', nameplate-leader-virus_lab contains 'tscheck-stale-leader2' (assignments preserved), and structure-power_tower rendered at (~59%,~34%) i.e. the v2 default position, not the stale (1%,1%) corner (hotspots migrated)."
+    },
+    {
+      "criterion": "Edit layout mode lets users drag nameplates and zones",
+      "name": "edit-layout-drag-persists",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "edit-hotspots-btn click showed edit-mode-banner. Dragging nameplate-power_tower by (40,40)px moved its bounding box by >10px. Dragging structure-virus_lab zone by (35,35)px also moved it >10px. After page.reload(), nameplate-power_tower remained at the dragged position (>10px delta from original) confirming persistence. reset-hotspots-btn executed without error."
+    },
+    {
+      "criterion": "Core flow still works",
+      "name": "core-flow-teams-and-export",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Assigned leader 'tscheck-core-leaderA' + player 'tscheck-core-p1' to serum_1 on Team A (nameplate-leader-serum_1 / nameplate-serum_1 reflect it). Switched to Team B, assigned a different leader 'tscheck-core-leaderB' to the same structure; switching back to Team A showed 'tscheck-core-leaderA' unchanged (teams independent). export-menu-btn -> export-team-a-item triggered a real download named 'canyon-team-a-plan...png' with no thrown console errors. Re-ran this same check against the public preview URL https://tactical-canyon.preview.emergentagent.com with identical pass result."
+    }
+  ],
+  "bugs": [
+    {
+      "severity": "medium",
+      "title": "Warehouse nameplates overlap the DAWNBREAKERS SPAWN AREA printed map labels",
+      "criterion": "Reported bug 1: nameplates must not cover the building's printed name on the map",
+      "evidence": "Browser check nameplates-dont-cover-labels failed at 1440x900 with all 14 Team A structures fully assigned: warehouse_1 and warehouse_2 nameplates overlap the left 'DAWNBREAKERS SPAWN AREA' label box (19,88.5,31,92.5 in % of map image), warehouse_3 and warehouse_4 nameplates overlap the right one (64,88.5,76,92.5). Screenshot nameplates-dont-cover-labels-1440x900.png visually confirms the warehouse leader/player text block sits immediately above and touching the spawn area label text. This is a frontend layout/positioning issue (DEFAULT_PLATE_OFFSETS in planner.ts place warehouse plates too close to the row below), not a data problem.",
+      "suggested_fix": "Increase the downward plate offset (or clamp vertically) for warehouse_1..4 nameplates so their bottom edge stays above y=88.5% of the map image, or shrink/relocate the spawn-area label collision zone used for clamping."
+    }
+  ],
+  "action_items": [],
+  "retest_needed": true
+}

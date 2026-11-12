@@ -148,6 +148,7 @@
 .corner.br { right: -2px; bottom: -2px; border-right: 1.5px solid; border-bottom: 1.5px solid; }
 
 .dash-flow { animation: dash-flow 1.2s linear infinite; }
+.route-flow { animation: route-flow 1s linear infinite; }
 .hud-pulse { animation: hud-pulse 2s ease-in-out infinite; }
 
 .live-glow { animation: live-glow 1.4s ease-in-out infinite; }
@@ -156,6 +157,7 @@
   50% { box-shadow: 0 0 18px rgba(255, 59, 98, 0.85); }
 }
 @keyframes dash-flow { to { stroke-dashoffset: -28; } }
+@keyframes route-flow { to { stroke-dashoffset: -20; } }
 @keyframes hud-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 @keyframes zone-pulse {
   0%, 100% { box-shadow: 0 0 8px rgba(0, 229, 255, 0.5), inset 0 0 10px rgba(0, 229, 255, 0.15); }
@@ -163,7 +165,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dash-flow, .hud-pulse, .zone-focused, .live-glow { animation: none; }
+  .dash-flow, .route-flow, .hud-pulse, .zone-focused, .live-glow { animation: none; }
 }
 
 /* ---------- Print: roster sheet only ---------- */

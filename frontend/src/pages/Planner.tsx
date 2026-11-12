@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { CircleHelp, Download, ImageUp, Map as MapIcon, Move, Printer, RotateCcw, Route, TriangleAlert, UserRoundPlus, Users } from "lucide-react";
+import { CircleHelp, Download, ImageUp, Map as MapIcon, Move, Printer, RotateCcw, TriangleAlert, UserRoundPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import BattleMap from "@/components/BattleMap";
@@ -9,6 +9,7 @@ import HelpDialog from "@/components/HelpDialog";
 import PrintRoster from "@/components/PrintRoster";
 import BattleCountdown from "@/components/BattleCountdown";
 import BattleReminder from "@/components/BattleReminder";
+import RouteControls from "@/components/RouteControls";
 import ReservesView from "@/components/ReservesView";
 import { battleLabel } from "@/lib/battle";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,7 @@ export default function Planner() {
     setExporting(true);
     const id = toast.loading(`Rendering ${teamTitle(t)} briefing…`);
     try {
-      const r = await exportTeamPlan({ team: t, imageSrc: map.src, hotspots: state.hotspots, plan: state.teams[t], showArrows: state.showArrows, battle: battleLabel(state.battle) });
+      const r = await exportTeamPlan({ team: t, imageSrc: map.src, hotspots: state.hotspots, plateOffsets: state.plateOffsets, plan: state.teams[t], routeVisibility: state.routeVisibility[t], battle: battleLabel(state.battle) });
       toast.success(`${teamTitle(t)} exported (${r.width}×${r.height})`, { id });
     } catch {
       toast.error("Export failed — try a different map image", { id });
@@ -129,12 +130,10 @@ export default function Planner() {
         </div>
 
         <div className="ml-auto flex items-center gap-1">
-          <HeaderBtn testId="edit-hotspots-btn" active={editMode} label={editMode ? "Done editing" : "Edit hotspots"} onClick={() => { setEditMode((v) => !v); setFocusedId(null); }}>
+          <HeaderBtn testId="edit-hotspots-btn" active={editMode} label={editMode ? "Done editing" : "Edit layout"} onClick={() => { setEditMode((v) => !v); setFocusedId(null); }}>
             <Move className="size-4" />
           </HeaderBtn>
-          <HeaderBtn testId="toggle-arrows-btn" active={state.showArrows} label="Arrows" onClick={() => actions.setShowArrows(!state.showArrows)}>
-            <Route className="size-4" />
-          </HeaderBtn>
+          <RouteControls team={team} visibility={state.routeVisibility[team]} actions={actions} />
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="ghost" data-testid="map-menu-btn" className="h-9 gap-1.5 px-2.5 text-[#B9D4F0] hover:bg-[#00E5FF]/10 hover:text-white" />}>
               <ImageUp className="size-4" /> <span className="hidden md:inline">Map</span>
@@ -215,8 +214,8 @@ export default function Planner() {
           {editMode && view === "map" && (
             <div data-testid="edit-mode-banner" className="mx-4 mb-2 flex flex-wrap items-center gap-2 rounded-md border border-amber-300/40 bg-amber-300/10 px-3 py-2 text-xs text-amber-200 sm:mx-6">
               <Move className="size-4" />
-              <span className="flex-1">Hotspot edit mode — drag the dashed zones to line them up with the buildings. Shared by both teams.</span>
-              <Button size="sm" variant="ghost" data-testid="reset-hotspots-btn" className="text-amber-200 hover:bg-amber-300/15" onClick={() => { actions.resetHotspots(); toast("Hotspots reset to defaults"); }}>
+              <span className="flex-1">Layout mode — drag the dashed zones onto the buildings and drag nameplates wherever they are easy to read. Shared by both teams.</span>
+              <Button size="sm" variant="ghost" data-testid="reset-hotspots-btn" className="text-amber-200 hover:bg-amber-300/15" onClick={() => { actions.resetHotspots(); toast("Layout reset to defaults"); }}>
                 <RotateCcw className="size-3.5" /> Reset
               </Button>
               <Button size="sm" data-testid="done-editing-btn" onClick={() => setEditMode(false)}>Done</Button>
@@ -229,28 +228,30 @@ export default function Planner() {
             <BattleMap
               imageSrc={map.src}
               hotspots={state.hotspots}
+              plateOffsets={state.plateOffsets}
               plan={plan}
               focusedId={focusedId}
               editMode={editMode}
-              showArrows={state.showArrows}
+              routeVisibility={state.routeVisibility[team]}
               onHotspotClick={onHotspotClick}
               onHotspotMove={actions.moveHotspot}
+              onPlateMove={actions.movePlate}
               onBackgroundClick={() => isDesktop && setFocusedId(null)}
+              toolbarExtra={!isDesktop && (
+                <Button
+                  data-testid="open-assignments-btn"
+                  onClick={() => setSheetOpen(true)}
+                  className="h-9 gap-1.5 px-3 shadow-[0_0_14px_rgba(0,229,255,0.4)]"
+                >
+                  <Users className="size-4" /> Assignments ({plan.selected.length})
+                  {duplicates.length > 0 && (
+                    <span data-testid="mobile-dup-badge" className="flex items-center gap-0.5 rounded-sm bg-[#FF3B62] px-1.5 text-[11px] font-bold text-white">
+                      <TriangleAlert className="size-3" /> {duplicates.length}
+                    </span>
+                  )}
+                </Button>
+              )}
             />
-            )}
-            {!isDesktop && view === "map" && (
-              <Button
-                data-testid="open-assignments-btn"
-                onClick={() => setSheetOpen(true)}
-                className="absolute bottom-3 left-1/2 z-30 h-11 -translate-x-1/2 gap-2 px-5 shadow-[0_0_20px_rgba(0,229,255,0.45)]"
-              >
-                <Users className="size-4" /> Assignments ({plan.selected.length})
-                {duplicates.length > 0 && (
-                  <span data-testid="mobile-dup-badge" className="flex items-center gap-0.5 rounded-sm bg-[#FF3B62] px-1.5 text-[11px] font-bold text-white">
-                    <TriangleAlert className="size-3" /> {duplicates.length}
-                  </span>
-                )}
-              </Button>
             )}
           </div>
         </main>

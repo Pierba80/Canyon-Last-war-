@@ -1,22 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import { Maximize, Minus, Plus } from "lucide-react";
 import Nameplate from "@/components/Nameplate";
 import {
-  ARROWS, DEFAULT_MAP_RATIO, STAGE_W, STRUCTURES, arrowGeom, emptyAssignment, plateAnchor,
+  DEFAULT_MAP_RATIO, ROUTES, ROUTE_STYLE, STAGE_W, STRUCTURES, emptyAssignment, isRouteVisible, plateAnchor, routeGeom,
 } from "@/lib/planner";
-import type { Hotspot, TeamPlan } from "@/lib/planner";
+import type { Hotspot, PlateOffset, TeamPlan } from "@/lib/planner";
 
 interface Props {
   imageSrc: string;
   hotspots: Record<string, Hotspot>;
+  plateOffsets: Record<string, PlateOffset>;
   plan: TeamPlan;
   focusedId: string | null;
   editMode: boolean;
-  showArrows: boolean;
+  routeVisibility: Record<string, boolean>;
   onHotspotClick: (id: string) => void;
   onHotspotMove: (id: string, x: number, y: number) => void;
+  onPlateMove: (id: string, dx: number, dy: number) => void;
   onBackgroundClick: () => void;
+  /** Extra controls rendered in the toolbar under the map (e.g. mobile Assignments button). */
+  toolbarExtra?: ReactNode;
 }
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -28,7 +32,7 @@ export default function BattleMap(p: Props) {
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pan = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
   const pinch = useRef<{ d: number; s: number; mx: number; my: number; tx: number; ty: number } | null>(null);
-  const drag = useRef<{ id: string; cx: number; cy: number; x: number; y: number } | null>(null);
+  const drag = useRef<{ kind: "zone" | "plate"; id: string; cx: number; cy: number; x: number; y: number } | null>(null);
   const moved = useRef(false);
 
   const fit = useCallback(() => {
@@ -99,11 +103,10 @@ export default function BattleMap(p: Props) {
     if (d) {
       const dx = e.clientX - d.cx, dy = e.clientY - d.cy;
       if (Math.abs(dx) + Math.abs(dy) > 3) moved.current = true;
-      p.onHotspotMove(
-        d.id,
-        clamp(d.x + (dx / (STAGE_W * view.s)) * 100, 0, 100),
-        clamp(d.y + (dy / (stageH * view.s)) * 100, 0, 100),
-      );
+      const nx = d.x + (dx / (STAGE_W * view.s)) * 100;
+      const ny = d.y + (dy / (stageH * view.s)) * 100;
+      if (d.kind === "zone") p.onHotspotMove(d.id, clamp(nx, 0, 100), clamp(ny, 0, 100));
+      else p.onPlateMove(d.id, clamp(nx, -100, 100), clamp(ny, -100, 100));
       return;
     }
     const pc = pinch.current;
@@ -138,17 +141,26 @@ export default function BattleMap(p: Props) {
     e.stopPropagation();
     const h = p.hotspots[id];
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    drag.current = { id, cx: e.clientX, cy: e.clientY, x: h.x, y: h.y };
+    drag.current = { kind: "zone", id, cx: e.clientX, cy: e.clientY, x: h.x, y: h.y };
+    moved.current = false;
+  };
+
+  const startPlateDrag = (id: string) => (e: ReactPointerEvent) => {
+    const h = p.hotspots[id];
+    const o = p.plateOffsets[id] ?? { dx: 0, dy: h.h / 2 + 0.4 };
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    drag.current = { kind: "plate", id, cx: e.clientX, cy: e.clientY, x: o.dx, y: o.dy };
     moved.current = false;
   };
 
   return (
+    <div className="flex h-full w-full flex-col">
     <div
       ref={wrapRef}
       data-testid="map-workspace"
       role="region"
       aria-label="Battle map workspace"
-      className="hud-grid relative h-full w-full touch-none select-none overflow-hidden cursor-grab active:cursor-grabbing"
+      className="hud-grid relative min-h-0 w-full flex-1 touch-none select-none overflow-hidden cursor-grab active:cursor-grabbing"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -175,35 +187,40 @@ export default function BattleMap(p: Props) {
         />
         <div className="scanlines pointer-events-none absolute inset-0" />
 
-        {p.showArrows && (
-          <svg
-            data-testid="tactical-arrows"
-            className="pointer-events-none absolute inset-0 z-10"
-            width={STAGE_W}
-            height={stageH}
-            viewBox={`0 0 ${STAGE_W} ${stageH}`}
-          >
-            {ARROWS.map(([f, t]) => {
-              const hf = p.hotspots[f], ht = p.hotspots[t];
-              if (!hf || !ht) return null;
-              const a = arrowGeom(hf, ht, stageH);
-              const deg = (a.angle * 180) / Math.PI;
-              return (
-                <g key={`${f}-${t}`} style={{ filter: "drop-shadow(0 0 3px rgba(0,229,255,0.9))" }}>
-                  <path
-                    d={`M ${a.x1} ${a.y1} Q ${a.cx} ${a.cy} ${a.x2} ${a.y2}`}
-                    fill="none"
-                    stroke="rgba(0,229,255,0.9)"
-                    strokeWidth={2.2}
-                    strokeDasharray="8 6"
-                    className="dash-flow"
-                  />
-                  <polygon points="4,0 -7,-5 -7,5" fill="#00E5FF" transform={`translate(${a.x2} ${a.y2}) rotate(${deg})`} />
-                </g>
-              );
-            })}
-          </svg>
-        )}
+        <svg
+          data-testid="tactical-routes"
+          className="pointer-events-none absolute inset-0 z-10 overflow-visible"
+          width={STAGE_W}
+          height={stageH}
+          viewBox={`0 0 ${STAGE_W} ${stageH}`}
+        >
+          {ROUTES.map((r) => {
+            if (!isRouteVisible(p.routeVisibility, r.id)) return null;
+            const hf = p.hotspots[r.from], ht = p.hotspots[r.to];
+            if (!hf || !ht) return null;
+            const a = routeGeom(r, hf, ht, stageH);
+            const deg = (a.angle * 180) / Math.PI;
+            const hd = ROUTE_STYLE.head;
+            return (
+              <g key={r.id} data-testid={`route-${r.id}`} style={{ filter: `drop-shadow(0 0 ${ROUTE_STYLE.glow / 2}px ${r.color}) drop-shadow(0 0 ${ROUTE_STYLE.glow}px ${r.color})` }}>
+                <path
+                  d={`M ${a.x1} ${a.y1} Q ${a.cx} ${a.cy} ${a.x2} ${a.y2}`}
+                  fill="none"
+                  stroke={r.color}
+                  strokeWidth={ROUTE_STYLE.width}
+                  strokeLinecap="round"
+                  strokeDasharray={ROUTE_STYLE.dash.join(" ")}
+                  className="route-flow"
+                />
+                <polygon
+                  points={`${hd * 0.5},0 ${-hd},${-hd * 0.6} ${-hd * 0.6},0 ${-hd},${hd * 0.6}`}
+                  fill={r.color}
+                  transform={`translate(${a.x2} ${a.y2}) rotate(${deg})`}
+                />
+              </g>
+            );
+          })}
+        </svg>
 
         {STRUCTURES.map((s) => {
           const h = p.hotspots[s.id];
@@ -251,7 +268,7 @@ export default function BattleMap(p: Props) {
         })}
 
         {STRUCTURES.filter((s) => p.plan.selected.includes(s.id) && p.hotspots[s.id]).map((s) => {
-          const a = plateAnchor(p.hotspots[s.id], s);
+          const a = plateAnchor(p.hotspots[s.id], p.plateOffsets[s.id]);
           return (
             <Nameplate
               key={s.id}
@@ -261,30 +278,46 @@ export default function BattleMap(p: Props) {
               x={a.x}
               y={a.y}
               focused={p.focusedId === s.id}
+              editMode={p.editMode}
               onClick={() => p.onHotspotClick(s.id)}
+              onDragStart={startPlateDrag(s.id)}
             />
           );
         })}
       </div>
 
-      <div
-        className="absolute right-3 top-3 z-30 flex flex-col overflow-hidden rounded-md border border-[#00E5FF]/30 bg-[#050D1A]/85 backdrop-blur-md"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button type="button" data-testid="zoom-in-btn" aria-label="Zoom in" onClick={() => zoomCenter(1.25)} className="hud-icon-btn">
-          <Plus className="size-4" />
-        </button>
-        <button type="button" data-testid="zoom-out-btn" aria-label="Zoom out" onClick={() => zoomCenter(0.8)} className="hud-icon-btn border-y border-[#00E5FF]/20">
+    </div>
+
+    {/* Toolbar under the map: never overlaps the battlefield */}
+    <div
+      data-testid="map-toolbar"
+      className="flex h-12 shrink-0 items-center gap-2 border-t border-[#00E5FF]/20 bg-[#050D1A]/90 px-2"
+    >
+      <div className="flex items-center overflow-hidden rounded-md border border-[#00E5FF]/30">
+        <button type="button" data-testid="zoom-out-btn" aria-label="Zoom out" onClick={() => zoomCenter(0.8)} className="hud-icon-btn h-9 w-10">
           <Minus className="size-4" />
         </button>
-        <button type="button" data-testid="zoom-reset-btn" aria-label="Fit map" onClick={fit} className="hud-icon-btn">
-          <Maximize className="size-4" />
+        <span data-testid="zoom-level" className="min-w-14 border-x border-[#00E5FF]/20 px-2 text-center font-mono text-[11px] tracking-[0.12em] text-[#7DD3FC]">
+          {Math.round(view.s * 100)}%
+        </span>
+        <button type="button" data-testid="zoom-in-btn" aria-label="Zoom in" onClick={() => zoomCenter(1.25)} className="hud-icon-btn h-9 w-10">
+          <Plus className="size-4" />
         </button>
       </div>
-      <div className="pointer-events-none absolute bottom-3 right-3 z-30 rounded-sm bg-[#050D1A]/80 px-2 py-1 font-mono text-[10px] tracking-[0.2em] text-[#7DD3FC]" data-testid="zoom-level">
-        {Math.round(view.s * 100)}%
-      </div>
+      <button
+        type="button"
+        data-testid="zoom-reset-btn"
+        aria-label="Fit map"
+        onClick={fit}
+        className="flex h-9 items-center gap-1.5 rounded-md border border-[#00E5FF]/30 px-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-[#B9D4F0] transition-colors duration-200 hover:bg-[#00E5FF]/12 hover:text-white"
+      >
+        <Maximize className="size-4" /> <span className="hidden sm:inline">Fit</span>
+      </button>
+      <span className="ml-1 hidden font-mono text-[10px] uppercase tracking-[0.15em] text-[#5B7A9C] md:inline">
+        {p.editMode ? "Drag zones & nameplates" : "Scroll / pinch to zoom · drag to pan"}
+      </span>
+      <div className="ml-auto flex items-center">{p.toolbarExtra}</div>
+    </div>
     </div>
   );
 }
