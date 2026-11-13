@@ -21,8 +21,27 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       <audio ref={audioRef} src="/last-war-music.mp3" loop preload="auto" />
+
+      <button
+        type="button"
+        onClick={toggleAudio}
+        aria-label={isPlaying ? "Disattiva musica" : "Attiva musica"}
+        className="fixed top-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900/90 hover:bg-gray-800 text-gray-100 text-xs font-medium border border-gray-700 shadow-lg backdrop-blur-sm transition-colors"
+      >
+        {isPlaying ? (
+          <>
+            <Volume2 className="size-4 text-emerald-400" />
+            <span>Audio ON</span>
+          </>
+        ) : (
+          <>
+            <VolumeX className="size-4 text-gray-400" />
+            <span>Audio OFF</span>
+          </>
+        )}
+      </button>
 
       <div className="flex-1">
         <Routes>
@@ -30,30 +49,12 @@ export default function App() {
         </Routes>
       </div>
 
-      <footer className="w-full px-4 py-2 flex items-center justify-between text-xs text-gray-400 bg-black/85 border-t border-gray-800">
-        <span>© 2026 Pīərbâ — Tutti i diritti riservati</span>
-
-        <button
-          type="button"
-          onClick={toggleAudio}
-          aria-label={isPlaying ? "Disattiva musica" : "Attiva musica"}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-200 transition-colors"
-        >
-          {isPlaying ? (
-            <>
-              <Volume2 className="size-4 text-emerald-400" />
-              <span>Audio ON</span>
-            </>
-          ) : (
-            <>
-              <VolumeX className="size-4 text-gray-400" />
-              <span>Audio OFF</span>
-            </>
-          )}
-        </button>
+      <footer className="w-full py-2 text-center text-xs text-gray-400 bg-black/80 border-t border-gray-800">
+        © 2026 Pīərbâ — Tutti i diritti riservati
       </footer>
     </div>
   );
 }
+
 
 
