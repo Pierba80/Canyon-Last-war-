@@ -40,7 +40,7 @@ export default function BattleMap(p: Props) {
     if (!el) return;
     const { width, height } = el.getBoundingClientRect();
     if (!width || !height) return;
-    const s = Math.min(width / STAGE_W, height / stageH) * 0.94;
+    const s = Math.max(width / STAGE_W, height / stageH) * 0.94;
     setView({ s, tx: (width - STAGE_W * s) / 2, ty: (height - stageH * s) / 2 });
   }, [stageH]);
 
