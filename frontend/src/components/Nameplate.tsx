@@ -47,9 +47,9 @@ export default function Nameplate({ id, name, assignment, x, y, focused, editMod
       style={{
         left: plateLeft((x / 100) * STAGE_W, w),
         top: `${y}%`,
-        minWidth: PLATE.minW,
-        maxWidth: PLATE.maxW,
-        padding: `${PLATE.padY}px ${PLATE.padX}px`,
+        minWidth: PLATE.minW * 1.25,
+        maxWidth: PLATE.maxW * 1.4,
+        padding: `${PLATE.padY + 2}px ${PLATE.padX + 4}px`,
         borderRadius: PLATE.radius,
         lineHeight: PLATE.lh,
       }}
@@ -57,7 +57,7 @@ export default function Nameplate({ id, name, assignment, x, y, focused, editMod
     >
       <span
         className="block truncate uppercase text-[#7DD3FC]"
-        style={{ fontFamily: FONT_MONO, fontSize: PLATE.header, fontWeight: 500 }}
+        style={{ fontFamily: FONT_MONO, fontSize: PLATE.header + 3, fontWeight: 600 }}
       >
         {name}
       </span>
@@ -65,14 +65,14 @@ export default function Nameplate({ id, name, assignment, x, y, focused, editMod
         <span
           data-testid={`nameplate-leader-${id}`}
           className="block truncate text-[#38F8FF] [text-shadow:0_0_6px_rgba(56,248,255,0.8)]"
-          style={{ fontFamily: FONT_HEADING, fontSize: PLATE.leader, fontWeight: 700 }}
+          style={{ fontFamily: FONT_HEADING, fontSize: PLATE.leader + 5, fontWeight: 700 }}
         >
           ★ {leader}
         </span>
       ) : (
         <span
           className="flex items-center justify-center text-[#5B7A9C]"
-          style={{ fontFamily: FONT_MONO, fontSize: PLATE.leader - 2, fontWeight: 600, height: PLATE.leader * PLATE.lh }}
+          style={{ fontFamily: FONT_MONO, fontSize: PLATE.leader + 1, fontWeight: 600, height: (PLATE.leader + 5) * PLATE.lh }}
         >
           NO LEADER
         </span>
@@ -82,7 +82,7 @@ export default function Nameplate({ id, name, assignment, x, y, focused, editMod
           key={`${p}-${i}`}
           data-testid={`nameplate-player-${id}-${i}`}
           className="block truncate text-[#E0F2FE]"
-          style={{ fontFamily: FONT_SANS, fontSize: PLATE.player, fontWeight: 500 }}
+          style={{ fontFamily: FONT_SANS, fontSize: PLATE.player + 4, fontWeight: 600 }}
         >
           {p}
         </span>
