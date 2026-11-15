@@ -1,0 +1,17 @@
+{
+  "name": "Canyon Tactical Planner",
+  "short_name": "Canyon Tactic",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#060A12",
+  "theme_color": "#060A12",
+  "icons": [
+     {
+       "src": "/last_war_canyon_512_final.png"
+       "sizes": "512x512",
+       "type": :image/png",
+       "purpose": "any"
+     }
+  ]
+}
