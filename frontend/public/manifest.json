@@ -8,10 +8,16 @@
   "theme_color": "#060A12",
   "icons": [
      {
-       "src": "/last_war_canyon_512_final.png"
-       "sizes": "192x192 512x512",
+       "src": "/last_war_canyon_512_final.png",
+       "sizes": "192x192",
        "type": "image/png",
        "purpose": "any"
-     }
+     },
+    {
+      "src": "/last_war_canyon_512_final.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ]
 }
