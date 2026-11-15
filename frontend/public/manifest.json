@@ -9,7 +9,7 @@
   "icons": [
      {
        "src": "/last_war_canyon_512_final.png"
-       "sizes": "512x512",
+       "sizes": "192x192 512x512",
        "type": "image/png",
        "purpose": "any"
      }
