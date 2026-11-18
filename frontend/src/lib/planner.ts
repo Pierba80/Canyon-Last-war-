@@ -75,6 +75,7 @@ export interface PlannerState {
   routeVisibility: Record<TeamId, Record<string, boolean>>;
   /** Alliance member list, shared by both teams. */
   members: string[];
+  profiles: Record<string, PlayerProfile>;
   battle: BattleSchedule;
 }
 
