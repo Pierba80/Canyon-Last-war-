@@ -63,18 +63,17 @@ export default function ReservesView({ team, plan, actions, knownNames, profiles
             add(draft.split(","));
           }}
         >
-          <Input
-            data-testid={"reserve-edit-input-${i}"}
-            aria-label={'Reserve ${i + 1}'}
-            placeholder="Reserve name (comma for several)"
-            value={r}
-            autoComplete="off"
-            onFocus={() => setFocus(true)}
-            onBlur={() => setFocus(false)}
-            onChange={(e) => action.updateReserve(team, i, e.target.value)}
-            className="h-10 w-auto mn-w-0 flex-1 bg-[#071B33]/70"
-          />
-          {r.trim() && <PlayerBadge name={r} profiles={profiles} />}
+         <Input
+           ref={inputRef}
+           data-testid="reserve-input"
+           placeholder="Reserve name (comma for several)"
+           value={draft}
+           autoComplete="off"
+           onFocus={() => setFocus(true)}
+           onBlur={() => setFocus(false)}
+           oChange={(e) => setDraft(e.target.value)}
+           className="h-11 bg-[#071B33] /70"
+           />
           <Button type="submit" data-testid="add-reserve-btn" className="h-11 px-4" disabled={!draft.trim()}>
             <Plus className="size-4" /> Add
           </Button>
