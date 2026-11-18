@@ -60,7 +60,7 @@ export const SQUAD_OPTIONS: { id: SquadType; label: string; icon: string }[] = [
   { id: "missile", label: "Missile", icon: "🚀" },
 ];
 
-export const AVATAR_PRESETS = ["🎖️", "🦁", "🦅", "🐺", "🐉", "🔥", "⚡", "💀", "👑", "🎯"];
+export const AVATAR_PRESETS = ["🎖️"];
 
 export const profileKey = (name: string) => name.trim().toLowerCase();
 
