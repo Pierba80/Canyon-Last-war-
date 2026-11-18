@@ -274,6 +274,7 @@ function loadState(): PlannerState {
       layoutVersion: LAYOUT_VERSION,
       routeVisibility: { A: { ...p.routeVisibility?.A }, B: { ...p.routeVisibility?.B } },
       members: Array.isArray(p.members) ? p.members : [],
+      profiles: p.profiles && typeof p.profiles === "object" ? p.profiles : {},
       battle: { at: p.battle?.at ?? null, weekly: p.battle?.weekly ?? false },
     };
   } catch {
