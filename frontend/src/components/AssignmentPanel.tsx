@@ -1,4 +1,4 @@
-\import { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, TriangleAlert, UserMinus, UserRoundX, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
 import {
  AVATAR_PRESETS, SQUAD_OPTIONS,STRUCTURES, STRUCTURES_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
 } from "@/lib/planner";
-import type { NamePlacements, PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
+import type { NamePlacements, PlannerActions, PlayerProfile, SquadType, TeamId, TeamPlan } from "@/lib/planner";
 
 interface Props {
   team: TeamId;
@@ -21,7 +21,7 @@ interface Props {
   actions: PlannerActions;
   knownNames: string[];
   members: string[];
-  profiles: Record<string, PlauyerProfile>;
+  profiles: Record<string, PlayerProfile>;
   unassigned: string[];
   /** Every name already on a visible building (either team) — used to offer importing them as members. */
   usedNames: string[];
@@ -41,7 +41,7 @@ function PlayerBadge({ name, profiles }: { name: string; profiles: Record<string
       <span>{prof.avatar || "🎖" }</span>
       )}
       {squad && <span title={squad.label}>{squad.icon}</span>}
-      {prof.power && <span className=font-mono text-[#38F8FF]">{prof.power}</span>}
+      {prof.power && <span className="font-mono text-[#38F8FF]">{prof.power}</span>}
      </span>
   );
 }
@@ -268,7 +268,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
   members: string[]; 
   profiles: Record<string, PlayerProfile>;
   usedNames: string[]; 
-  onSave: (list: string[]) updateProfiles: Record<string, PlayerProfile>) => void;
+  onSave: (list: string[], updateProfiles: Record<string, PlayerProfile>) => void;
 }) {
   const [text, setText] = useState(members.join("\n"));
   const [draftProfiles, setDraftProfiles] = useState<Record<string, PlayerProfile>>(() => ({ ...profiles }));
