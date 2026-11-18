@@ -358,10 +358,10 @@ if (!blob) throw new Error("Export failed");
 const url = URL.createObjectURL(blob);
 const a = document.createElement("a");
 a.href = url;
-= canyon-team-${team.toLowerCase()}-plan.png;
+a.download = "canyon-team-" + team.toLowerCase() + "-plan.png;
 document.body.appendChild(a);
-();
-a.remove();
+    a.click();
+    a.remove();
 setTimeout(() => URL.revokeObjectURL(url), 2000);
 return { width: canvas.width, height: canvas.height };
 }
