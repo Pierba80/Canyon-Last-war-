@@ -50,7 +50,7 @@ export default function AssignmentPanel(props: Props) {
   const { team, plan, focusedId, onFocus, actions, knownNames, unassigned, placements } = props;
   if (focusedId && STRUCTURE_BY_ID[focusedId]) {
     return (
-      <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} profiles={profiles} unassigned={unassigned} placements={placements} />
+      <Editor key={`${team}-${focusedId}`} team={team} plan={plan} id={focusedId} onFocus={onFocus} actions={actions} knownNames={knownNames} profiles={props.profiles} unassigned={unassigned} placements={placements} />
     );
   }
   return <Roster {...props} />;
