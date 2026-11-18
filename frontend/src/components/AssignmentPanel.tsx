@@ -442,7 +442,7 @@ function Stat({ label, value, testId }: { label: string; value: string; testId: 
 
 const slug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g,"-");
 
-function Editor({ team, plan, id, onFocus, actions, knownNames, profile, unassigned, placements }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "profiles" | "unassigned" | "placements"> & { id: string }) {
+function Editor({ team, plan, id, onFocus, actions, knownNames, profiles, unassigned, placements }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "profiles" | "unassigned" | "placements"> & { id: string }) {
   const def = STRUCTURE_BY_ID[id];
   const a = plan.assignments[id] ?? emptyAssignment();
   const selected = plan.selected.includes(id);
