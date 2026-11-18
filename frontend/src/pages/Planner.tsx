@@ -101,7 +101,7 @@ export default function Planner() {
     }
   };
 
-  const panel = <AssignmentPanel team={team} plan={plan} focusedId={focusedId} onFocus={(id) => { setFocusedId(id); if (!id && !isDesktop) setSheetOpen(false); }} actions={actions} knownNames={knownNames} members={state.members} unassigned={unassigned} usedNames={usedNames} placements={placements} duplicates={duplicates} />;
+  const panel = <AssignmentPanel team={team} plan={plan} focusedId={focusedId} onFocus={(id) => { setFocusedId(id); if (!id && !isDesktop) setSheetOpen(false); }} actions={actions} knownNames={knownNames} members={state.members} profiles={state.profiles} unassigned={unassigned} usedNames={usedNames} placements={placements} duplicates={duplicates} />;
 
   return (
     <>
