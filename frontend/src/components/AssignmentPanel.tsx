@@ -248,8 +248,9 @@ function MembersSummary({ members, profiles, unassigned, onManage }: { members: 
       ) : (
         <ul data-testid="unassigned-list" className="mt-2 flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
           {unassigned.map((n) => (
-            <li key={n} data-testid={`unassigned-member-${slug(n)}`} className="rounded-sm border border-amber-300/30 bg-amber-300/[0.07] px-2 py-0.5 text-xs text-amber-100">
-              {n}
+            <li key={n} data-testid={`unassigned-member-${slug(n)}`} className="flex items-center gap-1.5 rounded-sm border border-amber-300/30 bg-amber-300/[0.07] px-2 py-0.5 text-xs text-amber-100">
+              <span>{n}</span>
+              <PlayerBadge name={n} profiles={profiles} />
             </li>
           ))}
         </ul>
