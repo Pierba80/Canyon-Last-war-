@@ -138,11 +138,13 @@ function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames, 
         open={membersOpen}
         onOpenChange={setMembersOpen}
         members={members}
+        profiles={props.profiles}
         usedNames={usedNames}
-        onSave={(list) => {
+        onSave={(list, updateProfiles) => {
           actions.setMembers(list);
+          Object.entries(updateProfiles).forEach(([k, prof]) => actions.setProfile(k, prof));
           setMembersOpen(false);
-          toast.success(`Alliance list saved (${list.length} members)`);
+          toast.success(`Alliance roster saved (${list.length} members)`);
         }}
       />
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
