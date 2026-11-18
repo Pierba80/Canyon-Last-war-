@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+\import { useRef, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, Crown, Plus, Trash2, TriangleAlert, UserMinus, UserRoundX, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
+ AVATAR_PRESETS, SQUAD_OPTIONS,STRUCTURES, STRUCTURES_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
 } from "@/lib/planner";
 import type { NamePlacements, PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
 
