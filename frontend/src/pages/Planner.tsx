@@ -255,7 +255,8 @@ export default function Planner() {
             )}
           </div>
         </main>
-{!isDesktop && (
+        </div>
+      {!isDesktop && (
   <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
     <SheetContent
       side="bottom"
