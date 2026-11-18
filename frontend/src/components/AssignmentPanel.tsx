@@ -28,6 +28,23 @@ interface Props {
   placements: Map<string, NamePlacements>;
   duplicates: NamePlacements[];
 }
+function PlayerBadge({ name, profiles }: { name: string; profiles: Record<string, PlayerProfile> }) {
+  const prof = profiles[profileKey(name)];
+  if (!prof) return null;
+  const squad = SQUAD_OPTIONS.find((s) => s.id === prof.squad);
+  const isImg = prof.avatar.startsWith("data:");
+  return (
+    <span className="inline-flex items-center gap-1 rounded bg-[#002D54]/80 px-1.5 py-0.5 text-[10px] text-[#7DD3FC]">
+      {isImg ? (
+      <img src={prof.avatar} alt="" className="size-3.5 rounded-full object-cover" />
+      ) : (
+      <span>{prof.avatar || "🎖" }</span>
+      )}
+      {squad && <span title={squad.label}>{squad.icon}</span>}
+      {prof.power && <span className=font-mono text-[#38F8FF]">{prof.power}</span>}
+     </span>
+  );
+}
 
 export default function AssignmentPanel(props: Props) {
   const { team, plan, focusedId, onFocus, actions, knownNames, unassigned, placements } = props;
