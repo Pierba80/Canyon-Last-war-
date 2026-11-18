@@ -302,3 +302,66 @@ export async function exportTeamPlan(opts: {
     ctx.textBaseline = "middle";
     for (const l of p.lines) {
       const lh = l.size * PLATE.lh;
+      ctx.save();
+      ctx.font = l.font;
+      ctx.fillStyle = l.color;
+      if (l.glow) {
+        ctx.shadowColor = "rgba(56,248,255,0.8)";
+        ctx.shadowBlur = 6;
+      }
+      if (l.avatarImg) {
+        const avSize = l.size;
+        const txtW = ctx.measureText(l.text).width;
+        const totalW = avSize + 3 + txtW;
+        const startX = p.x + (p.w - totalW) / 2;
+        const midY = cy + lh / 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(startX + avSize / 2, midY, avSize / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(l.avatarImg, startX, midY - avSize / 2, avSize, avSize);
+        ctx.restore();
+        ctx.textAlign = "left";
+        ctx.fillText(l.text, startX + avSize + 3, midY);
+      } else {
+        ctx.fillText(l.text, p.x + p.w / 2, cy + lh / 2);
+      }
+      ctx.restore();
+      cy += lh;
+    }
+  }
+  ctx.restore();
+
+
+  if (reserves.length) {
+    const top = HEADER_H + contentH;
+    ctx.fillStyle = "#38F8FF";
+    ctx.fillRect(20, top + 6, STAGE_W - 40, 0.6);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = "600 7px " + FONT_MONO;
+    ctx.fillStyle = "#7DD3FC";
+    ctx.fillText("RESERVES (" + reserves.length + ")", 20, top + 18);
+    ctx.font = resFont;
+    ctx.fillStyle = "#E0F2FE";
+    resLines.forEach((l, i) => ctx.fillText(l, 20, top + 31 + i * 13));
+  }
+
+
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.font = "500 6px " + FONT_MONO;
+  ctx.fillStyle = "#4F6B8C";
+  ctx.fillText(teamTitle(team) + " // CANYON TACTICAL PLANNER", STAGE_W - 10, totalH - FOOTER_H / 2);
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
+if (!blob) throw new Error("Export failed");
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+= canyon-team-${team.toLowerCase()}-plan.png;
+document.body.appendChild(a);
+();
+a.remove();
+setTimeout(() => URL.revokeObjectURL(url), 2000);
+return { width: canvas.width, height: canvas.height };
+}
