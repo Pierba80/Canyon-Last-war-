@@ -230,7 +230,7 @@ export function DupNote({ name, placements, team, id, testId }: { name: string; 
   );
 }
 
-function MembersSummary({ members, unassigned, onManage }: { members: string[]; unassigned: string[]; onManage: () => void }) {
+function MembersSummary({ members, profiles, unassigned, onManage }: { members: string[]; profiles: Record<string, PlayerProfile>; unassigned: string[]; onManage: () => void }) {
   const done = members.length > 0 && unassigned.length === 0;
   return (
     <section data-testid="unassigned-section" className="mb-3 rounded-md border border-[#00E5FF]/20 bg-[#060A12]/60 p-3">
