@@ -256,22 +256,7 @@ export default function Planner() {
           </div>
         </main>
 
-        {isDesktop && (
-          <aside data-testid="assignment-panel" className="w-[380px] shrink-0 border-l border-[#00E5FF]/20 bg-[#0B1322]">
-            {panel}
-          </aside>
-        )}
-      </div>
-
-      {!isDesktop && (
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetContent side="bottom" data-testid="assignment-sheet" className="h-[78dvh] border-t border-[#00E5FF]/30 bg-[#0B1322] p-0">
-            <SheetTitle className="sr-only">Assignments</SheetTitle>
-            {panel}
-          </SheetContent>
-        </Sheet>
-      )}
-
+        
       <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
       <Toaster richColors />
     </div>
@@ -279,7 +264,31 @@ export default function Planner() {
     </>
   );
 }
-
+{!isDesktop && (
+  <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+    <SheetContent
+      side="bottom"
+      data-testid="assignment-sheet"
+      className="h-[85dvh] flex flex-col p-0 overflow-hidden"
+    >
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background shrink-0">
+        <SheetTitle className="text-base font-bold">Assignments</SheetTitle>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => setSheetOpen(false)}
+          className="h-8 px-3 font-semibold"
+        >
+          ← Torna alla mappa
+        </Button>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {panel}
+      </div>
+    </SheetContent>
+  </Sheet>
+)}
+      
 function HeaderBtn({ testId, label, active, onClick, children }: { testId: string; label: string; active?: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <Button
