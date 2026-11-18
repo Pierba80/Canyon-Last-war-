@@ -97,7 +97,7 @@ export default function ReservesView({ team, plan, actions, knownNames, profiles
                 onChange={(e) => actions.updateReserve(team, i, e.target.value)}
                 className="h-10 w-auto min-w-0 flex-1 bg-[#071B33]/70"
               />
-              {r.trim() && <PlayerBadget name={r} profiles={profiles} />)
+              {r.trim() && <PlayerBadget name={r} profiles={profiles} />}
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={<Button variant="ghost" data-testid={`promote-reserve-btn-${i}`} className="h-10 gap-1.5 px-2.5 text-[#38F8FF] hover:bg-[#00E5FF]/10" />}
