@@ -308,39 +308,128 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="font-heading uppercase tracking-tight">Alliance members</DialogTitle>
-          <DialogDescription>Paste one name per line, or separate names with commas. Shared by Team A and Team B.</DialogDescription>
+          <DialogTitle className="font-heading uppercase tracking-tight">Alliance Roster & Profile</DialogTitle>
+          <DialogDescription>Manage player names, avatars, power, and main squad type.</DialogDescription>
         </DialogHeader>
-        <Textarea
-          data-testid="members-textarea"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={"Commander Rex\nNova\nBlaze"}
-          className="min-h-48 bg-[#071B33]/70 font-sans text-sm"
-        />
-        <div className="flex items-center justify-between gap-2">
-          <span data-testid="members-count" className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#7B96B8]">{count} names</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            data-testid="import-used-names-btn"
-            disabled={usedNames.length === 0}
-            onClick={() => setText(parseNames(`${text}\n${usedNames.join("\n")}`).join("\n"))}
-            className="text-xs text-[#38F8FF] hover:bg-[#00E5FF]/10"
-          >
-            <Plus className="size-3.5" /> Add names already on the map
+
+        <div className="flex gap-2 border-b border-[#00E5FF]/15 pb-2">
+          <Button type="button" size="sm" variant={tab === "profiles" ? "default" : "ghost"} onClick={() => setTab("profiles")}>
+            Player Cards ({parsedList.length})
+          </Button>
+          <Button type="button" size="sm" variant={tab === "bulk" ? "default" : "ghost"} onClick={() => setTab("bulk")}>
+            Bulk Edit Names
           </Button>
         </div>
+
+
+        {tab === "bulk" ? (
+          <div className="space-y-2">
+            <Textarea
+              data-testid="members-textarea"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={"Commander Rex\nNova\nBlaze"}
+              className="min-h-48 bg-[#071B33]/70 font-sans text-sm"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span data-testid="members-count" className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#7B96B8]">{parsedList.length} names</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                data-testid="import-used-names-btn"
+                disabled={usedNames.length === 0}
+                onClick={() => setText(parseNames(`${text}\n${usedNames.join("\n")}`).join("\n"))}
+                className="text-xs text-[#38F8FF] hover:bg-[#00E5FF]/10"
+              >
+                <Plus className="size-3.5" /> Add names from map
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+            {parsedList.length === 0 ? (
+              <p className="py-6 text-center text-xs text-[#8EA7C7]">
+                No members yet. Switch to <b>Bulk Edit Names</b> or import names from the map first.
+              </p>
+            ) : (
+              parsedList.map((name) => {
+                const prof = getProf(name);
+                const isImg = prof.avatar.startsWith("data:");
+                return (
+                  <div key={name} className="rounded-md border border-[#00E5FF]/20 bg-[#071B33]/60 p-2.5 space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <label className="relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#38F8FF]/40 bg-[#002D54] text-lg overflow-hidden" title="Upload photo">
+                        {isImg ? <img src={prof.avatar} alt={name} className="size-full object-cover" /> : prof.avatar}
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAvatarFile(name, e.target.files?.[0])} />
+                      </label>
+
+
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-white">{name}</p>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {AVATAR_PRESETS.map((em) => (
+                            <button
+                              key={em}
+                              type="button"
+                              onClick={() => patchProf(name, { avatar: em })}
+                              className={`rounded px-1 text-xs ${prof.avatar === em ? "bg-[#00E5FF]/30 ring-1 ring-[#00E5FF]" : "opacity-70 hover:opacity-100"}`}
+                            >
+                              {em}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Power (e.g. 24.5M)</label>
+                        <Input
+                          value={prof.power}
+                          onChange={(e) => patchProf(name, { power: e.target.value })}
+                          placeholder="24.5M"
+                          className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
+                        />
+                      </div>
+
+
+                      <div>
+                        <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Squad Type</label>
+                        <div className="mt-0.5 grid grid-cols-3 gap-1">
+                          {SQUAD_OPTIONS.map((sq) => (
+                            <button
+                              key={sq.id}
+                              type="button"
+                              onClick={() => patchProf(name, { squad: sq.id as SquadType })}
+                              className={`flex h-8 items-center justify-center gap-1 rounded border text-[11px] font-medium transition-colors ${
+                                prof.squad === sq.id
+                                  ? "border-[#00E5FF] bg-[#00E5FF]/20 text-white"
+                                  : "border-white/10 bg-[#060A12]/50 text-[#8EA7C7]"
+                              }`}
+                              title={sq.label}
+                            >
+                              <span>{sq.icon}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
         <DialogFooter>
           <DialogClose render={<Button variant="outline" data-testid="members-cancel-btn" />}>Cancel</DialogClose>
-          <Button data-testid="members-save-btn" onClick={() => onSave(parseNames(text))}>Save list</Button>
+          <Button data-testid="members-save-btn" onClick={() => onSave(parsedList, draftProfiles)}>Save list</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-const slug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
   return (
@@ -350,6 +439,8 @@ function Stat({ label, value, testId }: { label: string; value: string; testId: 
     </div>
   );
 }
+
+const slug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g,"-");
 
 function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned, placements }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "unassigned" | "placements"> & { id: string }) {
   const def = STRUCTURE_BY_ID[id];
