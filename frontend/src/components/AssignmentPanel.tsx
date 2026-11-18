@@ -262,14 +262,51 @@ function MembersSummary({ members, profiles, unassigned, onManage }: { members: 
   );
 }
 
-function MembersDialog({ open, onOpenChange, members, usedNames, onSave }: {
-  open: boolean; onOpenChange: (o: boolean) => void; members: string[]; usedNames: string[]; onSave: (list: string[]) => void;
+function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSave }: {
+  open: boolean; 
+  onOpenChange: (o: boolean) => void; 
+  members: string[]; 
+  profiles: Record<string, PlayerProfile>;
+  usedNames: string[]; 
+  onSave: (list: string[]) updateProfiles: Record<string, PlayerProfile>) => void;
 }) {
   const [text, setText] = useState(members.join("\n"));
-  const count = parseNames(text).length;
+  const [draftProfiles, setDraftProfiles] = useState<Record<string, PlayerProfile>>(() => ({ ...profiles }));
+  const [tab, setTab] = useState<"profiles" | "bulk">("profiles");
+  const parsedList = parseNames(text);
+  const getProf = (name: string): PlayerProfile =>
+   draftProfiles[profileKey(name)] ?? { avatar: "🎖", power: "", squad: "tank" };
+
+  const patchProf = (name: string, path: Partial<PlayerProfile>) => {
+    const k = profileKey(name);
+    setDraftProfiles(prev) => ({
+      ...prev,
+      [k]: { ...getProf(name), ...patch },
+    }));
+  };
+  
+  const handleAvatarfile = (name: string, file?: File) => {
+    is (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas. width = 64;
+          canvas.height = 64;
+          canvas.getContext("2d")?.drawImage(img,0, 0, 64, 64);
+          patchProf(name, { avatar: canvas.toDataURL("image/jpeg", 0.75) });
+        };
+        img.src = reader.result;
+      }
+    };
+    readeer.readAsDataURL(file);
+  };
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="members-dialog" className="max-w-md">
+      <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="font-heading uppercase tracking-tight">Alliance members</DialogTitle>
           <DialogDescription>Paste one name per line, or separate names with commas. Shared by Team A and Team B.</DialogDescription>
