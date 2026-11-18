@@ -306,7 +306,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] flex flex-col">
+      <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle className="font-heading uppercase tracking-tight">Alliance Roster & Profile</DialogTitle>
           <DialogDescription>Manage player names, avatars, power, and main squad type.</DialogDescription>
@@ -329,7 +329,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={"Commander Rex\nNova\nBlaze"}
-              className="min-h-48 bg-[#071B33]/70 font-sans text-sm"
+              className="min-h-32 max-h-48 bg-[#071B33]/70 font-sans text-sm"
             />
             <div className="flex items-center justify-between gap-2">
               <span data-testid="members-count" className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#7B96B8]">{parsedList.length} names</span>
