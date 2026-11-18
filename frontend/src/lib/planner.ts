@@ -384,7 +384,14 @@ export function usePlanner() {
             reserves: t.reserves.filter((_, i) => i !== idx),
           };
         }),
+
       setMembers: (members: string[]) => setState((s) => ({ ...s, members: dedupeNames(members) })),
+      setProfile: (name: string, profile: PlayerProfile) =>
+        setState((s) => ({
+          ...s,
+          profiles: { ...s.profiles, [profileKey(name)]: profile },
+        })),
+      
     }),
     [updateTeam, updateAssignment],
   );
