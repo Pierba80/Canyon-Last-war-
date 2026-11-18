@@ -46,6 +46,23 @@ export interface BattleSchedule {
   at: string | null;
   weekly: boolean;
 }
+export type SquadType = "tank" | "aircraft" | "missile";
+
+export interface PlayerProfile {
+  avatar: string;
+  power: string;
+  squad: SquadType;
+}
+
+export const SQUAD_OPTIONS: { id: SquadType; label: string; icon: string }[] = [
+  { id: "tank", label: "Tank", icon: "🛡️" },
+  { id: "aircraft", label: "Aircraft", icon: "✈️" },
+  { id: "missile", label: "Missile", icon: "🚀" },
+];
+
+export const AVATAR_PRESETS = ["🎖️", "🦁", "🦅", "🐺", "🐉", "🔥", "⚡", "💀", "👑", "🎯"];
+
+export const profileKey = (name: string) => name.trim().toLowerCase();
 
 export const RESERVES_ID = "reserves";
 
