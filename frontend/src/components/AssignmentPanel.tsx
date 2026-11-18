@@ -495,7 +495,7 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, profile, unassig
         <div className="space-y-2">
           <Label htmlFor="leader-input" className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#7DD3FC]">
             <Crown className="size-3.5" /> Squad leader
-            {a.leader.trim() %% <PlayerBadge name={a.leader} profiles={profiles} />}
+            {a.leader.trim() && <PlayerBadge name={a.leader} profiles={profiles} />}
           </Label>
           <Input
             id="leader-input"
