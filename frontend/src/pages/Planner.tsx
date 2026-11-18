@@ -76,7 +76,7 @@ export default function Planner() {
     setExporting(true);
     const id = toast.loading(`Rendering ${teamTitle(t)} briefing…`);
     try {
-      const r = await exportTeamPlan({ team: t, imageSrc: map.src, hotspots: state.hotspots, plateOffsets: state.plateOffsets, plan: state.teams[t], routeVisibility: state.routeVisibility[t], battle: battleLabel(state.battle) });
+      const r = await exportTeamPlan({ team: t, imageSrc: map.src, hotspots: state.hotspots, plateOffsets: state.plateOffsets, plan: state.teams[t], profiles: state.profiles, routeVisibility: state.routeVisibility[t], battle: battleLabel(state.battle) });
       toast.success(`${teamTitle(t)} exported (${r.width}×${r.height})`, { id });
     } catch {
       toast.error("Export failed — try a different map image", { id });
@@ -223,13 +223,14 @@ export default function Planner() {
           )}
           <div className="relative mx-2 mb-2 min-h-0 flex-1 overflow-hidden rounded-lg border border-[#00E5FF]/20 bg-[#08101E] sm:mx-4">
             {view === "reserves" ? (
-              <ReservesView team={team} plan={plan} actions={actions} knownNames={knownNames} unassigned={unassigned} placements={placements} />
+              <ReservesView team={team} plan={plan} actions={actions} knownNames={knownNames} profiles={state.profiles} unassigned={unassigned} placements={placements} />
             ) : (
             <BattleMap
               imageSrc={map.src}
               hotspots={state.hotspots}
               plateOffsets={state.plateOffsets}
               plan={plan}
+              profiles={state.profiles}
               focusedId={focusedId}
               editMode={editMode}
               routeVisibility={state.routeVisibility[team]}
