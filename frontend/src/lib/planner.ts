@@ -255,7 +255,7 @@ function loadState(): PlannerState {
     layoutVersion: LAYOUT_VERSION,
     routeVisibility: { A: {}, B: {} },
     members: [],
-    profiles: {}
+    profiles: {},
     battle: { at: null, weekly: false },
   };
   try {
