@@ -5,13 +5,14 @@ import Nameplate from "@/components/Nameplate";
 import {
   DEFAULT_MAP_RATIO, ROUTES, ROUTE_STYLE, STAGE_W, STRUCTURES, emptyAssignment, isRouteVisible, plateAnchor, routeGeom,
 } from "@/lib/planner";
-import type { Hotspot, PlateOffset, TeamPlan } from "@/lib/planner";
+import type { Hotspot, PlateOffset, PlayerProfile, TeamPlan } from "@/lib/planner";
 
 interface Props {
   imageSrc: string;
   hotspots: Record<string, Hotspot>;
   plateOffsets: Record<string, PlateOffset>;
   plan: TeamPlan;
+  profiles: Record<string, PlayerProfile>;
   focusedId: string | null;
   editMode: boolean;
   routeVisibility: Record<string, boolean>;
@@ -275,6 +276,7 @@ export default function BattleMap(p: Props) {
               id={s.id}
               name={s.name}
               assignment={p.plan.assignments[s.id] ?? emptyAssignment()}
+              profiles=={p.profiles}
               x={a.x}
               y={a.y}
               focused={p.focusedId === s.id}
