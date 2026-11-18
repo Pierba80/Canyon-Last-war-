@@ -279,7 +279,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
   const patchProf = (name: string, path: Partial<PlayerProfile>) => {
     const k = profileKey(name);
-    setDraftProfiles(prev) => ({
+    setDraftProfiles((prev) => ({
       ...prev,
       [k]: { ...getProf(name), ...patch },
     }));
