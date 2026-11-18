@@ -286,7 +286,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
   };
   
   const handleAvatarfile = (name: string, file?: File) => {
-    is (!file) return;
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
