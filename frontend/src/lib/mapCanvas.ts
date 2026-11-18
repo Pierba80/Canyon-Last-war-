@@ -1,9 +1,9 @@
 import {
-  FONT_HEADING, FONT_MONO, FONT_SANS, PLATE, ROUTES, ROUTE_STYLE, STAGE_W, STRUCTURES, isRouteVisible, plateAnchor,
-  plateLeft, routeGeom,
-  teamTitle,
+  FONT_HEADING, FONT_MONO, FONT_SANS, PLATE, ROUTES, ROUTE_STYLE, SQUAD_OPTIONS, STAGE_W, STRUCTURES, isRouteVisible, plateAnchor,
+  plateLeft, profileKey, routeGeom, teamTitle,
 } from "@/lib/planner";
-import type { Assignment, Hotspot, PlateOffset, TeamId, TeamPlan } from "@/lib/planner";
+import type { Assignment, Hotspot, PlateOffset, PlayerProfile, TeamId, TeamPlan } from "@/lib/planner";
+
 
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -14,7 +14,7 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Read an uploaded file, downscale to keep localStorage happy, return a JPEG data URL. */
+
 export async function fileToDataUrl(file: File, maxSide = 2400): Promise<string> {
   const url = URL.createObjectURL(file);
   try {
@@ -30,22 +30,59 @@ export async function fileToDataUrl(file: File, maxSide = 2400): Promise<string>
   }
 }
 
-interface PlateLine { text: string; font: string; color: string; size: number; glow: boolean }
 
-function plateLines(name: string, a: Assignment): PlateLine[] {
+interface PlateLine {
+  text: string;
+  font: string;
+  color: string;
+  size: number;
+  glow: boolean;
+  avatarImg?: HTMLImageElement | null;
+}
+
+
+function formatMemberText(name: string, profiles: Record<string, PlayerProfile>, prefix = "") {
+  const prof = profiles[profileKey(name)];
+  if (!prof) return `${prefix}${name}`;
+  const squad = SQUAD_OPTIONS.find((s) => s.id === prof.squad);
+  const avatarPrefix = prof.avatar && !prof.avatar.startsWith("data:") ? `${prof.avatar} ` : "";
+  const squadSuffix = squad ? ` ${squad.icon}` : "";
+  const powerSuffix = prof.power ? ` (${prof.power})` : "";
+  return `${avatarPrefix}${prefix}${name}${squadSuffix}${powerSuffix}`;
+}
+
+
+function plateLines(name: string, a: Assignment, profiles: Record<string, PlayerProfile>, avatarMap: Map<string, HTMLImageElement>): PlateLine[] {
   const leader = a.leader.trim();
   const lines: PlateLine[] = [
     { text: name.toUpperCase(), font: `500 ${PLATE.header}px ${FONT_MONO}`, color: "#7DD3FC", size: PLATE.header, glow: false },
     leader
-      ? { text: `★ ${leader}`, font: `700 ${PLATE.leader}px ${FONT_HEADING}`, color: "#38F8FF", size: PLATE.leader, glow: true }
+      ? {
+          text: formatMemberText(leader, profiles, "★ "),
+          font: `700 ${PLATE.leader}px ${FONT_HEADING}`,
+          color: "#38F8FF",
+          size: PLATE.leader,
+          glow: true,
+          avatarImg: avatarMap.get(profileKey(leader)) ?? null,
+        }
       : { text: "NO LEADER", font: `600 ${PLATE.leader - 2}px ${FONT_MONO}`, color: "#5B7A9C", size: PLATE.leader, glow: false },
   ];
   for (const p of a.players) {
     const t = p.trim();
-    if (t) lines.push({ text: t, font: `500 ${PLATE.player}px ${FONT_SANS}`, color: "#E0F2FE", size: PLATE.player, glow: false });
+    if (t) {
+      lines.push({
+        text: formatMemberText(t, profiles),
+        font: `500 ${PLATE.player}px ${FONT_SANS}`,
+        color: "#E0F2FE",
+        size: PLATE.player,
+        glow: false,
+        avatarImg: avatarMap.get(profileKey(t)) ?? null,
+      });
+    }
   }
   return lines;
 }
+
 
 function fitText(ctx: CanvasRenderingContext2D, text: string, max: number) {
   if (ctx.measureText(text).width <= max) return text;
@@ -54,53 +91,79 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, max: number) {
   return `${t}…`;
 }
 
+
 interface PlateBox { x: number; y: number; w: number; h: number; lines: PlateLine[] }
 
+
 function layoutPlate(ctx: CanvasRenderingContext2D, ax: number, ay: number, lines: PlateLine[]): PlateBox {
-  const inner = PLATE.maxW - PLATE.padX * 2;
+  const maxBoxW = PLATE.maxW * 1.25;
+  const inner = maxBoxW - PLATE.padX * 2;
   let w = 0;
   for (const l of lines) {
     ctx.font = l.font;
-    l.text = fitText(ctx, l.text, inner);
-    w = Math.max(w, ctx.measureText(l.text).width);
+    const imgSpace = l.avatarImg ? l.size + 3 : 0;
+    l.text = fitText(ctx, l.text, inner - imgSpace);
+    w = Math.max(w, ctx.measureText(l.text).width + imgSpace);
   }
-  w = Math.min(PLATE.maxW, Math.max(PLATE.minW, w + PLATE.padX * 2));
+  w = Math.min(maxBoxW, Math.max(PLATE.minW, w + PLATE.padX * 2));
   const h = PLATE.padY * 2 + lines.reduce((s, l) => s + l.size * PLATE.lh, 0);
   return { x: plateLeft(ax, w), y: ay, w, h, lines };
 }
 
+
 const HEADER_H = 72;
 const FOOTER_H = 22;
 
+
 export async function exportTeamPlan(opts: {
   team: TeamId; imageSrc: string; hotspots: Record<string, Hotspot>; plateOffsets: Record<string, PlateOffset>;
-  plan: TeamPlan; routeVisibility: Record<string, boolean>; battle: string | null;
+  plan: TeamPlan; profiles?: Record<string, PlayerProfile>; routeVisibility: Record<string, boolean>; battle: string | null;
 }) {
-  const { team, imageSrc, hotspots, plateOffsets, plan, routeVisibility, battle } = opts;
+  const { team, imageSrc, hotspots, plateOffsets, plan, profiles = {}, routeVisibility, battle } = opts;
   await Promise.all([
     document.fonts.load(`900 30px ${FONT_HEADING}`),
     document.fonts.load(`700 10px ${FONT_HEADING}`),
     document.fonts.load(`500 8px ${FONT_SANS}`),
     document.fonts.load(`500 7px ${FONT_MONO}`),
   ]);
+
+
+  // Precarica tutte le foto avatar (data URL)
+  const avatarMap = new Map<string, HTMLImageElement>();
+  await Promise.all(
+    Object.entries(profiles).map(async ([k, prof]) => {
+      if (prof.avatar?.startsWith("data:")) {
+        try {
+          const im = await loadImage(prof.avatar);
+          avatarMap.set(k, im);
+        } catch {
+          /* ignore broken avatar */
+        }
+      }
+    }),
+  );
+
+
   const img = await loadImage(imageSrc);
   const stageH = (STAGE_W * img.naturalHeight) / img.naturalWidth;
   const outW = Math.max(2400, img.naturalWidth);
   const k = outW / STAGE_W;
 
+
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
 
-  // Phase 1: layout nameplates (measureText is transform-independent)
+
   const selected = STRUCTURES.filter((s) => plan.selected.includes(s.id) && hotspots[s.id]);
   const plates = selected.map((s) => {
     const a = plan.assignments[s.id] ?? { leader: "", players: [] };
     const anchor = plateAnchor(hotspots[s.id], plateOffsets[s.id]);
-    return layoutPlate(ctx, (anchor.x / 100) * STAGE_W, (anchor.y / 100) * stageH, plateLines(s.name, a));
+    return layoutPlate(ctx, (anchor.x / 100) * STAGE_W, (anchor.y / 100) * stageH, plateLines(s.name, a, profiles, avatarMap));
   });
   const contentH = Math.max(stageH, ...plates.map((p) => p.y + p.h + 8));
-  // Reserves block below the map, word-wrapped
-  const reserves = plan.reserves.map((r) => r.trim()).filter(Boolean);
+
+
+  const reserves = plan.reserves.map((r) => r.trim()).filter(Boolean).map((r) => formatMemberText(r, profiles));
   const resFont = `500 9px ${FONT_SANS}`;
   const resLines: string[] = [];
   if (reserves.length) {
@@ -118,11 +181,12 @@ export async function exportTeamPlan(opts: {
   const reservesH = reserves.length ? 26 + resLines.length * 13 : 0;
   const totalH = HEADER_H + contentH + reservesH + FOOTER_H;
 
+
   canvas.width = Math.round(outW);
   canvas.height = Math.round(totalH * k);
   ctx.scale(k, k);
 
-  // Background + header
+
   ctx.fillStyle = "#060A12";
   ctx.fillRect(0, 0, STAGE_W, totalH);
   const g = ctx.createLinearGradient(0, 0, 0, HEADER_H);
@@ -136,6 +200,7 @@ export async function exportTeamPlan(opts: {
   ctx.fillStyle = "#00E5FF";
   ctx.fillRect(0, HEADER_H - 1.2, STAGE_W, 1.2);
   ctx.restore();
+
 
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
@@ -166,12 +231,12 @@ export async function exportTeamPlan(opts: {
     STAGE_W / 2, battle ? 61 : 58,
   );
 
-  // Map
+
   ctx.save();
   ctx.translate(0, HEADER_H);
   ctx.drawImage(img, 0, 0, STAGE_W, stageH);
 
-  // Only the routes currently visible for this team
+
   for (const r of ROUTES) {
     if (!isRouteVisible(routeVisibility, r.id) || !hotspots[r.from] || !hotspots[r.to]) continue;
     const a = routeGeom(r, hotspots[r.from], hotspots[r.to], stageH);
@@ -201,7 +266,7 @@ export async function exportTeamPlan(opts: {
     ctx.restore();
   }
 
-  // Selected zones
+
   for (const s of selected) {
     const h = hotspots[s.id];
     const x = ((h.x - h.w / 2) / 100) * STAGE_W, y = ((h.y - h.h / 2) / 100) * stageH;
@@ -217,7 +282,7 @@ export async function exportTeamPlan(opts: {
     ctx.restore();
   }
 
-  // Nameplates
+
   for (const p of plates) {
     ctx.save();
     ctx.shadowColor = "rgba(0,229,255,0.65)";
@@ -237,50 +302,3 @@ export async function exportTeamPlan(opts: {
     ctx.textBaseline = "middle";
     for (const l of p.lines) {
       const lh = l.size * PLATE.lh;
-      ctx.save();
-      ctx.font = l.font;
-      ctx.fillStyle = l.color;
-      if (l.glow) {
-        ctx.shadowColor = "rgba(56,248,255,0.8)";
-        ctx.shadowBlur = 6;
-      }
-      ctx.fillText(l.text, p.x + p.w / 2, cy + lh / 2);
-      ctx.restore();
-      cy += lh;
-    }
-  }
-  ctx.restore();
-
-  if (reserves.length) {
-    const top = HEADER_H + contentH;
-    ctx.fillStyle = "#38F8FF";
-    ctx.fillRect(20, top + 6, STAGE_W - 40, 0.6);
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-    ctx.font = `600 7px ${FONT_MONO}`;
-    ctx.fillStyle = "#7DD3FC";
-    ctx.fillText(`RESERVES (${reserves.length})`, 20, top + 18);
-    ctx.font = resFont;
-    ctx.fillStyle = "#E0F2FE";
-    resLines.forEach((l, i) => ctx.fillText(l, 20, top + 31 + i * 13));
-  }
-
-  // Footer
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
-  ctx.font = `500 6px ${FONT_MONO}`;
-  ctx.fillStyle = "#4F6B8C";
-  ctx.fillText(`${teamTitle(team)} // CANYON TACTICAL PLANNER`, STAGE_W - 10, totalH - FOOTER_H / 2);
-
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
-  if (!blob) throw new Error("Export failed");
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `canyon-team-${team.toLowerCase()}-plan.png`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-  return { width: canvas.width, height: canvas.height };
-}
