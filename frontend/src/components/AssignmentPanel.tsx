@@ -9,7 +9,7 @@ import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
- AVATAR_PRESETS, SQUAD_OPTIONS,STRUCTURES, STRUCTURES_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
+ AVATAR_PRESETS, SQUAD_OPTIONS,STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
 } from "@/lib/planner";
 import type { NamePlacements, PlannerActions, PlayerProfile, SquadType, TeamId, TeamPlan } from "@/lib/planner";
 
@@ -56,7 +56,7 @@ export default function AssignmentPanel(props: Props) {
   return <Roster {...props} />;
 }
 
-function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames, duplicates }: Props) {
+function Roster({ team, plan, onFocus, actions, members, profiles, unassigned, usedNames, duplicates }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const operatives = plan.selected.reduce((n, id) => {
@@ -76,7 +76,7 @@ function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames, 
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-3">
         <DoubleBooked duplicates={duplicates} team={team} onFocus={onFocus} actions={actions} />
-        <MembersSummary members={members} profiles={props.profiles} unassigned={unassigned} onManage={() => setMembersOpen(true)} />
+        <MembersSummary members={members} profiles={profiles} unassigned={unassigned} onManage={() => setMembersOpen(true)} />
         <p className="px-2 pb-2 text-xs text-[#8EA7C7]">Tap a structure on the map or below to deploy a squad.</p>
         <ul className="space-y-1">
           {STRUCTURES.map((s) => {
@@ -138,7 +138,7 @@ function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames, 
         open={membersOpen}
         onOpenChange={setMembersOpen}
         members={members}
-        profiles={props.profiles}
+        profiles={profiles}
         usedNames={usedNames}
         onSave={(list, updateProfiles) => {
           actions.setMembers(list);
@@ -277,7 +277,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
   const getProf = (name: string): PlayerProfile =>
    draftProfiles[profileKey(name)] ?? { avatar: "🎖", power: "", squad: "tank" };
 
-  const patchProf = (name: string, path: Partial<PlayerProfile>) => {
+  const patchProf = (name: string, patch: Partial<PlayerProfile>) => {
     const k = profileKey(name);
     setDraftProfiles((prev) => ({
       ...prev,
@@ -285,7 +285,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
     }));
   };
   
-  const handleAvatarfile = (name: string, file?: File) => {
+  const handleAvatarFile = (name: string, file?: File) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
@@ -301,7 +301,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
         img.src = reader.result;
       }
     };
-    readeer.readAsDataURL(file);
+    reader.readAsDataURL(file);
   };
   
   return (
