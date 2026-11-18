@@ -9,7 +9,7 @@ import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
- AVATAR_PRESETS, SQUAD_OPTIONS,STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, suggestNames, teamTitle,
+ AVATAR_PRESETS, SQUAD_OPTIONS,STRUCTURES, STRUCTURE_BY_ID, cleanName, emptyAssignment, parseNames, placementLabel, profileKey, suggestNames, teamTitle,
 } from "@/lib/planner";
 import type { NamePlacements, PlannerActions, PlayerProfile, SquadType, TeamId, TeamPlan } from "@/lib/planner";
 
