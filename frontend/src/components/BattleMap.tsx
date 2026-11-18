@@ -276,7 +276,7 @@ export default function BattleMap(p: Props) {
               id={s.id}
               name={s.name}
               assignment={p.plan.assignments[s.id] ?? emptyAssignment()}
-              profiles=={p.profiles}
+              profiles={p.profiles}
               x={a.x}
               y={a.y}
               focused={p.focusedId === s.id}
