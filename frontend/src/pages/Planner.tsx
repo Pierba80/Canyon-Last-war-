@@ -255,15 +255,6 @@ export default function Planner() {
             )}
           </div>
         </main>
-
-        
-      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
-      <Toaster richColors />
-    </div>
-    <PrintRoster teams={printTeams} plans={state.teams} placements={placements} battle={battleLabel(state.battle)} />
-    </>
-  );
-}
 {!isDesktop && (
   <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
     <SheetContent
@@ -288,6 +279,15 @@ export default function Planner() {
     </SheetContent>
   </Sheet>
 )}
+        
+      <HelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+      <Toaster richColors />
+    </div>
+    <PrintRoster teams={printTeams} plans={state.teams} placements={placements} battle={battleLabel(state.battle)} />
+    </>
+  );
+}
+
       
 function HeaderBtn({ testId, label, active, onClick, children }: { testId: string; label: string; active?: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
