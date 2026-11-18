@@ -71,7 +71,7 @@ export default function ReservesView({ team, plan, actions, knownNames, profiles
            autoComplete="off"
            onFocus={() => setFocus(true)}
            onBlur={() => setFocus(false)}
-           oChange={(e) => setDraft(e.target.value)}
+           onChange={(e) => setDraft(e.target.value)}
            className="h-11 bg-[#071B33] /70"
            />
           <Button type="submit" data-testid="add-reserve-btn" className="h-11 px-4" disabled={!draft.trim()}>
