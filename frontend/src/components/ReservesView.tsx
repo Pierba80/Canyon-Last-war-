@@ -6,23 +6,24 @@ import { Input } from "@/components/ui/input";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DupNote, Suggestions } from "@/components/AssignmentPanel";
+import { DupNote, PlayerBadge, Suggestions } from "@/components/AssignmentPanel";
 import {
   RESERVES_ID, STRUCTURES, cleanName, placementLabel, suggestNames, teamTitle,
 } from "@/lib/planner";
-import type { NamePlacements, PlannerActions, TeamId, TeamPlan } from "@/lib/planner";
+import type { NamePlacements, PlannerActions, PlayerProfile, TeamId, TeamPlan } from "@/lib/planner";
 
 interface Props {
   team: TeamId;
   plan: TeamPlan;
   actions: PlannerActions;
   knownNames: string[];
+  profiles: Record<string, PlayerProfile>;
   unassigned: string[];
   placements: Map<string, NamePlacements>;
 }
 
 /** Separate reserves screen for one team. */
-export default function ReservesView({ team, plan, actions, knownNames, unassigned, placements }: Props) {
+export default function ReservesView({ team, plan, actions, knownNames, profiles, unassigned, placements }: Props) {
   const [draft, setDraft] = useState("");
   const [focus, setFocus] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,16 +64,17 @@ export default function ReservesView({ team, plan, actions, knownNames, unassign
           }}
         >
           <Input
-            ref={inputRef}
-            data-testid="reserve-input"
+            data-testid={"reserve-edit-input-${i}"}
+            aria-label={'Reserve ${i + 1}'}
             placeholder="Reserve name (comma for several)"
-            value={draft}
+            value={r}
             autoComplete="off"
             onFocus={() => setFocus(true)}
             onBlur={() => setFocus(false)}
-            onChange={(e) => setDraft(e.target.value)}
-            className="h-11 bg-[#071B33]/70"
+            onChange={(e) => action.updateReserve(team, i, e.target.value)}
+            className="h-10 w-auto mn-w-0 flex-1 bg-[#071B33]/70"
           />
+          {r.trim() && <PlayerBadge name={r} profiles={profiles} />}
           <Button type="submit" data-testid="add-reserve-btn" className="h-11 px-4" disabled={!draft.trim()}>
             <Plus className="size-4" /> Add
           </Button>
