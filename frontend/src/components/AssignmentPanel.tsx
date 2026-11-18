@@ -76,7 +76,7 @@ function Roster({ team, plan, onFocus, actions, members, unassigned, usedNames, 
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-3">
         <DoubleBooked duplicates={duplicates} team={team} onFocus={onFocus} actions={actions} />
-        <MembersSummary members={members} unassigned={unassigned} onManage={() => setMembersOpen(true)} />
+        <MembersSummary members={members} profiles={props.profiles} unassigned={unassigned} onManage={() => setMembersOpen(true)} />
         <p className="px-2 pb-2 text-xs text-[#8EA7C7]">Tap a structure on the map or below to deploy a squad.</p>
         <ul className="space-y-1">
           {STRUCTURES.map((s) => {
