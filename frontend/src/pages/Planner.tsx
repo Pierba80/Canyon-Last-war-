@@ -261,7 +261,8 @@ export default function Planner() {
     <SheetContent
       side="bottom"
       data-testid="assignment-sheet"
-      className="h-[85dvh] flex flex-col p-0 overflow-hidden"
+      className="!h-[85dvh] !max-h-[85dvh] flex flex-col p-0 overflow-hidden"
+      
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background shrink-0">
         <SheetTitle className="text-base font-bold">Assignments</SheetTitle>
