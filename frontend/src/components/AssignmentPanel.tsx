@@ -21,6 +21,7 @@ interface Props {
   actions: PlannerActions;
   knownNames: string[];
   members: string[];
+  profiles: Record<string, PlauyerProfile>;
   unassigned: string[];
   /** Every name already on a visible building (either team) — used to offer importing them as members. */
   usedNames: string[];
