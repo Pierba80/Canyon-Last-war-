@@ -28,7 +28,7 @@ interface Props {
   placements: Map<string, NamePlacements>;
   duplicates: NamePlacements[];
 }
-function PlayerBadge({ name, profiles }: { name: string; profiles: Record<string, PlayerProfile> }) {
+  export function PlayerBadge({ name, profiles }: { name: string; profiles: Record<string, PlayerProfile> }) {
   const prof = profiles[profileKey(name)];
   if (!prof) return null;
   const squad = SQUAD_OPTIONS.find((s) => s.id === prof.squad);
@@ -442,7 +442,7 @@ function Stat({ label, value, testId }: { label: string; value: string; testId: 
 
 const slug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g,"-");
 
-function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned, placements }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "unassigned" | "placements"> & { id: string }) {
+function Editor({ team, plan, id, onFocus, actions, knownNames, profile, unassigned, placements }: Pick<Props, "team" | "plan" | "onFocus" | "actions" | "knownNames" | "profiles" | "unassigned" | "placements"> & { id: string }) {
   const def = STRUCTURE_BY_ID[id];
   const a = plan.assignments[id] ?? emptyAssignment();
   const selected = plan.selected.includes(id);
@@ -495,6 +495,7 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned, plac
         <div className="space-y-2">
           <Label htmlFor="leader-input" className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#7DD3FC]">
             <Crown className="size-3.5" /> Squad leader
+            {a.leader.trim() %% <PlayerBadge name={a.leader} profiles={profiles} />}
           </Label>
           <Input
             id="leader-input"
@@ -579,6 +580,7 @@ function Editor({ team, plan, id, onFocus, actions, knownNames, unassigned, plac
                   onChange={(e) => actions.updatePlayer(team, id, i, e.target.value)}
                   className="h-10 w-auto min-w-0 flex-1 bg-[#071B33]/70"
                 />
+                {p.trim() && <PlayerBadge name={p} profiles={profiles} />}
                 <Button
                   variant="ghost"
                   size="icon"
