@@ -340,12 +340,6 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
           reader.readAsText(file);
         };
                      
-          
-        img.src = reader.result;
-      }
-    };
-    reader.readAsDataURL(file);
-  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] overflow-y-auto flex flex-col">
@@ -489,7 +483,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
       </DialogContent>
     </Dialog>
   );
-
+  }
 function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
   return (
     <div className="rounded-md border border-[#00E5FF]/15 bg-[#060A12]/60 px-3 py-2">
