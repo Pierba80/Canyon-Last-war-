@@ -482,7 +482,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+   );
   }
 function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
   return (
