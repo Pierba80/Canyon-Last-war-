@@ -305,7 +305,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             members: parsedList,
             profiles: draftProfiles,
           };
-          const blob = new Blob([JSON.stringify((payload, null, 2)], { type: "application/json" });
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
@@ -314,19 +314,20 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
           a.click();
           a.remove();
           setTimeout(() => URL.revokeObjectURL(url), 2000);
-          toast.success("Roster file downloaded (" + parsedList.lengh + " players)");
+          toast.success("Roster file downloaded (" + parsedList.length + " players)");
         };
 
         const importRosterFile =(file?: File) => {
           if (!file) return;
           const reader = new FileReader();
-          reader.onload =() => {
+          reader.onload = () => {
             try {
-              const data = JSON.isArray(data.members)) throw new Error("Invalid file");
+              const data = JSON.parse(String(reader.result));
+              if (!Array.isArray(data.members)) throw new Error("invalid file");
               const cleanMembers = parseNames(data.members.join(\n"));
               setText(cleanMembers.join("\n"));
-              if (data.profiles && typeof data profiles === "object") {
-                setDraftProfiles((prev) => ({ ...prev, ...data.profiles }))
+              if (data.profiles && typeof data.profiles === "object") {
+                setDraftProfiles((prev) => ({ ...prev, ...data.profiles }));
               }
               toast.success("Loaded " + cleanMembers.length + " players! Click Save list to apply.");
             } catch {
