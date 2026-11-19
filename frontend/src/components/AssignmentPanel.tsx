@@ -298,6 +298,45 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
           canvas.getContext("2d")?.drawImage(img,0, 0, 64, 64);
           patchProf(name, { avatar: canvas.toDataURL("image/jpeg", 0.75) });
         };
+        const exportRosterFile = () => {
+          const payload = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            members: parsedList,
+            profiles: draftProfiles,
+          };
+          const blob = new Blob([JSON.stringify((payload, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "canyon-alliance-roster.json";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          toast.success("Roster file downloaded (" + parsedList.lengh + " players)");
+        };
+
+        const importRosterFile =(file?: File) => {
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload =() => {
+            try {
+              const data = JSON.isArray(data.members)) throw new Error("Invalid file");
+              const cleanMembers = parseNames(data.members.join(\n"));
+              setText(cleanMembers.join("\n"));
+              if (data.profiles && typeof data profiles === "object") {
+                setDraftProfiles((prev) => ({ ...prev, ...data.profiles }))
+              }
+              toast.success("Loaded " + cleanMembers.length + " players! Click Save list to apply.");
+            } catch {
+              toast.error(Invalid roster file");
+            }
+          };
+          reader.readAsText(file);
+        };
+                     
+          
         img.src = reader.result;
       }
     };
