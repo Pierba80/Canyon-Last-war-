@@ -297,9 +297,10 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
           canvas.height = 64;
           canvas.getContext("2d")?.drawImage(img,0, 0, 64, 64);
           patchProf(name, { avatar: canvas.toDataURL("image/jpeg", 0.75) });
-          }
         };
-      reader.readAsDataURL(file);
+      }
+    };
+    reader.readAsDataURL(file);
     };
         const exportRosterFile = () => {
           const payload = {
@@ -697,4 +698,3 @@ export function Suggestions({ names, onPick, testId, label = "Used before" }: { 
     </div>
   );
  }
-}
