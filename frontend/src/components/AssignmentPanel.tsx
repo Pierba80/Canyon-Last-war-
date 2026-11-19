@@ -365,7 +365,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             </Button>
             <label className=inline-flex h-8 cursoir-pointer items-center justify-center rounded-md border border-input bg-background px-2.5 text-xs font- medium hover:bg-accent hover:text-accent-foreground">
             Import
-            <input type="file" accept=".json,application/json" className="hidden" onChange={(e) => { importRosterFile(e.target.files?.[0]), e.target.value = "",}} />
+            <input type="file" accept=".json,application/json" className="hidden" onChange={(e) => { importRosterFile(e.target.files?.[0]); e.target.value = "",}} />
           </label>
         </div>
       </div>
