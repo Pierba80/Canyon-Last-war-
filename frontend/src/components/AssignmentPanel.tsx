@@ -370,7 +370,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               accept=".json" 
               className="hidden" 
               onChange={(e) => { 
-                const f = e.target.files?.(0) ?? undefined;
+                const f = e.target.files?.item(0) ?? undefined;
                 importRosterFile(f);
                 e.target.value = "";
               }}
