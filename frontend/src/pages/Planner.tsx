@@ -25,7 +25,7 @@ import type { TeamId } from "@/lib/planner";
 import { exportTeamPlan, fileToDataUrl } from "@/lib/mapCanvas";
 
 function useIsDesktop() {
-  const q = "(min-width: 76px)";
+  const q = "(min-width: 768px)";
   const [m, setM] = useState(() => window.matchMedia(q).matches);
   useEffect(() => {
     const mq = window.matchMedia(q);
