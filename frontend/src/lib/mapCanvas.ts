@@ -96,7 +96,7 @@ interface PlateBox { x: number; y: number; w: number; h: number; lines: PlateLin
 
 
 function layoutPlate(ctx: CanvasRenderingContext2D, ax: number, ay: number, lines: PlateLine[]): PlateBox {
-  const maxBoxW = PLATE.maxW * 1.25;
+  const maxBoxW = PLATE.maxW * 1.35;
   const inner = maxBoxW - PLATE.padX * 2;
   let w = 0;
   for (const l of lines) {
@@ -310,9 +310,9 @@ export async function exportTeamPlan(opts: {
         ctx.shadowBlur = 6;
       }
       if (l.avatarImg) {
-        const avSize = l.size;
+        const avSize = l.size * 1.35;
         const txtW = ctx.measureText(l.text).width;
-        const totalW = avSize + 3 + txtW;
+        const totalW = avSize + 4 + txtW;
         const startX = p.x + (p.w - totalW) / 2;
         const midY = cy + lh / 2;
         ctx.save();
@@ -322,7 +322,7 @@ export async function exportTeamPlan(opts: {
         ctx.drawImage(l.avatarImg, startX, midY - avSize / 2, avSize, avSize);
         ctx.restore();
         ctx.textAlign = "left";
-        ctx.fillText(l.text, startX + avSize + 3, midY);
+        ctx.fillText(l.text, startX + avSize + 4, midY);
       } else {
         ctx.fillText(l.text, p.x + p.w / 2, cy + lh / 2);
       }
