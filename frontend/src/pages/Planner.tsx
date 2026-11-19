@@ -256,6 +256,11 @@ export default function Planner() {
             )}
           </div>
         </main>
+        {isDesktop && (
+      <aside className="flex w-80 shrink-0 flex-col border-l border-[#00E5FF]/20 bg-[#050D1A]/90 lg:w96">
+        {panel}
+      </aside>
+      )}
         </div>
       {!isDesktop && (
   <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
