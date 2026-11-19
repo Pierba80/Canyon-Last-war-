@@ -351,14 +351,23 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
           <DialogDescription>Manage player names, avatars, power, and main squad type.</DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-2 border-b border-[#00E5FF]/15 pb-2">
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-[#00E5FF]/15 pb-2">
           <Button type="button" size="sm" variant={tab === "profiles" ? "default" : "ghost"} onClick={() => setTab("profiles")}>
             Player Cards ({parsedList.length})
           </Button>
           <Button type="button" size="sm" variant={tab === "bulk" ? "default" : "ghost"} onClick={() => setTab("bulk")}>
             Bulk Edit Names
           </Button>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Button type="button" size="sm" variant="outline" onClick={exportRosterFile} disabled={parsedList.length === 0} className="h-8 text-xs">
+              Export
+            </Button>
+            <label className=inline-flex h-8 cursoir-pointer items-center justify-center rounded-md border border-input bg-background px-2.5 text-xs font- medium hover:bg-accent hover:text-accent-foreground">
+            Import
+            <input type="file" accept=".json,application/json" className="hidden" onChange={(e) => { importRosterFile(e.target.files?.[0]), e.target.value = "",}} />
+          </label>
         </div>
+      </div>
 
 
         {tab === "bulk" ? (
