@@ -345,7 +345,6 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
       }
     };
     reader.readAsDataURL(file);
-  };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
