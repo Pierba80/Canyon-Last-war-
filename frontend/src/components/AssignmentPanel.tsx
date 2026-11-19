@@ -696,4 +696,5 @@ export function Suggestions({ names, onPick, testId, label = "Used before" }: { 
       ))}
     </div>
   );
+ }
 }
