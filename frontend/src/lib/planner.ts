@@ -235,7 +235,7 @@ export const plateLeft = (cx: number, w: number) => Math.min(STAGE_W - 4 - w, Ma
 
 /** Nameplate metrics shared by the DOM nameplate and the canvas export. Logical px. */
 export const PLATE = {
-  padX: 8, padY: 4, header: 7, leader: 12, player: 10, lh: 1.3, minW: 80, maxW: 170, radius: 2,
+  padX: 10, padY: 6, header: 9.5, leader: 15, player: 13, lh: 1.32, minW: 110, maxW: 230, radius: 3,
 };
 export const FONT_HEADING = '"Space Grotesk Variable", sans-serif';
 export const FONT_SANS = '"Geist Variable", sans-serif';
