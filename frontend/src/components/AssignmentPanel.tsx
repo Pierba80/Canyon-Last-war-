@@ -324,7 +324,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             try {
               const data = JSON.parse(String(reader.result));
               if (!Array.isArray(data.members)) throw new Error("invalid file");
-              const cleanMembers = parseNames(data.members.join(\n"));
+              const cleanMembers = parseNames(data.members.join("\n"));
               setText(cleanMembers.join("\n"));
               if (data.profiles && typeof data.profiles === "object") {
                 setDraftProfiles((prev) => ({ ...prev, ...data.profiles }));
