@@ -331,7 +331,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               }
               toast.success("Loaded " + cleanMembers.length + " players! Click Save list to apply.");
             } catch {
-              toast.error(Invalid roster file");
+              toast.error("Invalid roster file");
             }
           };
           reader.readAsText(file);
@@ -363,9 +363,18 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             <Button type="button" size="sm" variant="outline" onClick={exportRosterFile} disabled={parsedList.length === 0} className="h-8 text-xs">
               Export
             </Button>
-            <label className=inline-flex h-8 cursoir-pointer items-center justify-center rounded-md border border-input bg-background px-2.5 text-xs font- medium hover:bg-accent hover:text-accent-foreground">
+            <label className=inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-2.5 text-xs font-medium hover:bg-accent hover:text-accent-foreground">
             Import
-            <input type="file" accept=".json,application/json" className="hidden" onChange={(e) => { importRosterFile(e.target.files?.[0]); e.target.value = "",}} />
+            <input 
+              type="file" 
+              accept=".json" 
+              className="hidden" 
+              onChange={(e) => { 
+                const f = e.target.files?.(0) ?? undefined;
+                importRosterFile(f);
+                e.target.value = "";
+              }}
+              />
           </label>
         </div>
       </div>
