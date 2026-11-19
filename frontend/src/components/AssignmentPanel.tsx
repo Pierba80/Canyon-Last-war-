@@ -363,7 +363,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             <Button type="button" size="sm" variant="outline" onClick={exportRosterFile} disabled={parsedList.length === 0} className="h-8 text-xs">
               Export
             </Button>
-            <label className=inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-2.5 text-xs font-medium hover:bg-accent hover:text-accent-foreground">
+            <label className=inline-flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium">
             Import
             <input 
               type="file" 
