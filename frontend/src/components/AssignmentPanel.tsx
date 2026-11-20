@@ -381,7 +381,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.fillText("ALLIANCE ROSTER", pad, pad + 24);
               ctx.fillStyle = "#94A3B8";
               ctx.font = "13px sans-serif";
-              ctx.fillText('Players: ${rows.length}  |  Total Power: ${Math.round(totalPow * 10) / 10}M' , pad, pad + 46);
+              ctx.fillText('Players: ${rows.length}  Total Power: ${Math.round(totalPow * 10) / 10}M' , pad, pad + 46);
 
               const loadImg = (src: string) =>
                 new Promise<HTMLImageElement | null>((res) => {
