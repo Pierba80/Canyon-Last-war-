@@ -359,9 +359,9 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               const cols = rows.length > 50 ? 3 : 2;
               const perCol = Math.ceil(rows.length / cols);
-              const colW = 360;
-              const gapX = 14;
-              const rowH = 44;
+              const colW = 280;
+              const gapX = 10;
+              const rowH = 40;
               const headH = 68;
               const pad = 18;
               const w = pad * 2 + cols + colW + (cols - 1) * gapX;
@@ -439,17 +439,17 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               }
 
               ctx.fillStyle = "#F8FAFC";
-              ctx.font = "bold 13px sans-serif";
-              const shortName = r.name.length > 15 ? r.name.slice(0, 14) + "..." : r.name;
-              ctx.fillText(shortName, x + 74, y + 24);
+              ctx.font = "bold 12px sans-serif";
+              const shortName = r.name.length > 13 ? r.name.slice(0, 12) + "..." : r.name;
+              ctx.fillText(shortName, x + 70, y + 23);
 
               ctx.fillStyle = "#38BDF8";
-              ctx.font = "bold 12px sans-serif";
-              ctx.fillText(r.powerLabel, x + 218, y + 24);
+              ctx.font = "bold 11px sans-serif";
+              ctx.fillText(r.powerLabel, x + 166, y + 23);
 
               if (r.squad) {
                 ctx.fillStyle = badgeColor[r.squad] || "#334155";
-                ctx.fillRect(x + 280, y + 9, 72, 22);
+                ctx.fillRect(x + 212, y + 8, 62, 20);
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "bold 11px sans-serif";
                 ctx.fillText(r.squad.toUpperCase(), x + 286, y + 24);
