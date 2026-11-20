@@ -429,7 +429,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 ctx.restore();
               } else {
                 ctx.font = "20px sans-serif";
-                ctx fillText(r.avatar, avX + 3, y + 27);
+                ctx.fillText(r.avatar, avX + 3, y + 27);
               }
 
               ctx.fillStyle = "#F8FAFC";
@@ -439,7 +439,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               ctx.fillStyle = "#38BDF8";
               ctx.font = "bold 12px sans-serif";
-              ctx fillText(r.powerLabel, x + 218, y + 24);
+              ctx.fillText(r.powerLabel, x + 218, y + 24);
 
               if (r.squad) {
                 ctx.fillStyle = badgeColor[r.squad] || "#334155";
@@ -454,7 +454,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
   link.download = "alliance-roster.png";
   link.href = canvas.toDataURL("image/png");
   link.click();
-  toast success("Roster PNG exported (" + rows.length + " players)");
+  toast.success("Roster PNG exported (" + rows.length + " players)");
 };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
