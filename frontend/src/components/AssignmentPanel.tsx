@@ -435,7 +435,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.fillStyle = "#F8FAFC";
               ctx.font = "bold 13px sans-serif";
               const shortName = r.name.length > 15 ? r.name.slice(0, 14) + "..." : r.name;
-              ctx.fillText(shortname, x + 74, y + 24);
+              ctx.fillText(shortName, x + 74, y + 24);
 
               ctx.fillStyle = "#38BDF8";
               ctx.font = "bold 12px sans-serif";
@@ -472,7 +472,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             Bulk Edit Names
           </Button>
           <div className="ml-auto flex items-center gap-1.5">
-            <Button type="button" size="sm" variant="outline" onClick={exportRosterPnf} disabled={parsedList.length === 0} className="h-8 text-xs">
+            <Button type="button" size="sm" variant="outline" onClick={exportRosterPng} disabled={parsedList.length === 0} className="h-8 text-xs">
             PNG
             </Button>
             <Button type="button" size="sm" variant="outline" onClick={exportRosterFile} disabled={parsedList.length === 0} className="h-8 text-xs">
