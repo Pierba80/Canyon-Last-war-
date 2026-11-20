@@ -420,7 +420,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 const avX = x + 36;
                 const avY = y + 5;
                 const avS = 30;
-                if (im) };
+                if (im) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(avX + avS / 2, avY + avS / 2, avS / 2, 0, Math.PI * 2);
@@ -438,7 +438,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.fillText(shortname, x + 74, y + 24);
 
               ctx.fillStyle = "#38BDF8";
-              cxt.font = "bold 12px sans-serif";
+              ctx.font = "bold 12px sans-serif";
               ctx fillText(r.powerLabel, x + 218, y + 24);
 
               if (r.squad) {
