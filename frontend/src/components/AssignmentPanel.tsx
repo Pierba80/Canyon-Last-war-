@@ -359,11 +359,11 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               const cols = 4;
               const perCol = 25;
-              const colW = 280;
+              const colW = 285;
               const gapX = 10;
-              const rowH = 40;
-              const headH = 68;
-              const pad = 18;
+              const rowH = 38;
+              const headH = 66;
+              const pad = 16;
               const w = pad * 2 + cols * colW + (cols - 1) * gapX;
               const h = pad * 2 + headH + perCol * rowH;
               
@@ -407,25 +407,27 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 mixed: "#D97706",
   };
 
-              rows.forEach((r, i) => {
+             Array.from({ length: 100 }, (_, i) => rows.at(i) ?? null).forEach((r, i) => {
                 const c = Math.floor(i / perCol);
                 const row = i % perCol;
                 const x = pad + c * (colW + gapX);
                 const y = pad + headH + row * rowH;
 
                 ctx.fillStyle = row % 2 === 0 ? "#0B192E" : "#081324";
-                ctx.fillRect(x, y, colW, rowH - 4);
+                ctx.fillRect(x, y, colW, rowH - 3);
                 ctx.strokeStyle = "rgba(0,229,255,0.18)";
-                ctx.strokeRect(x, y, colW, rowH - 4);
+                ctx.strokeRect(x, y, colW, rowH - 3);
 
                 ctx.fillStyle = "#64748B";
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillText("#" + (i + 1), x + 8, y + 24);
+                ctx.fillText("#" + (i + 1), x + 7, y + 23);
+
+               if (!r) return;
 
                 const im = imgs.at(i);
                 const avX = x + 36;
-                const avY = y + 5;
-                const avS = 30;
+                const avY = y + 4;
+                const avS = 28;
                 if (im) {
                 ctx.save();
                 ctx.beginPath();
@@ -434,8 +436,8 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 ctx.drawImage(im, avX, avY, avS, avS);
                 ctx.restore();
               } else {
-                ctx.font = "20px sans-serif";
-                ctx.fillText(r.avatar, avX + 3, y + 27);
+                ctx.font = "18px sans-serif";
+                ctx.fillText(r.avatar, avX + 3, y + 25);
               }
 
               ctx.fillStyle = "#F8FAFC";
@@ -445,13 +447,13 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               ctx.fillStyle = "#38BDF8";
               ctx.font = "bold 11px sans-serif";
-              ctx.fillText(r.powerLabel, x + 166, y + 23);
+              ctx.fillText(r.powerLabel, x + 165, y + 23);
 
               if (r.squad) {
                 ctx.fillStyle = badgeColor[r.squad] || "#334155";
-                ctx.fillRect(x + 212, y + 8, 62, 20);
+                ctx.fillRect(x + 212, y + 7, 66, 20);
                 ctx.fillStyle = "#FFFFFF";
-                ctx.font = "bold 11px sans-serif";
+                ctx.font = "bold 10px sans-serif";
                 ctx.fillText(r.squad.toUpperCase(), x + 216, y + 24);
               }
             });
