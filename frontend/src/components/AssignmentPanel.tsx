@@ -472,6 +472,9 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
             Bulk Edit Names
           </Button>
           <div className="ml-auto flex items-center gap-1.5">
+            <Button type="button" size="sm" variant="outline" onClick={exportRosterPnf} disabled={parsedList.length === 0} className="h-8 text-xs">
+            PNG
+            </Button>
             <Button type="button" size="sm" variant="outline" onClick={exportRosterFile} disabled={parsedList.length === 0} className="h-8 text-xs">
               Export
             </Button>
