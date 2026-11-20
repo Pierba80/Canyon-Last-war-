@@ -385,7 +385,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               const loadImg = (src: string) =>
                 new Promise<HTMLImageElement | null>((res) => {
-                  if (!src.startsWith("data")) return res(null));
+                  if (!src.startsWith("data")) return res(null);
                   const im = new Image();
                   im.onload = () => res(im);
                   im.onerror = () => res(null);
