@@ -383,8 +383,79 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.font = "13px sans-serif";
               ctx.fillText('Players: ${rows.length}  |  Total Power: ${Math.round(totalPow * 10) / 10}M' , pad, pad + 46);
 
-              QUI
-                          
+              const loadImg = (src: string) =>
+                new Promise<HTMLImageElement | null>((res) => {
+                  if (!src.startsWith("data")) return res(null));
+                  const im = new Image();
+                  im.onload = () => res(im);
+                  im.onerror = () => res(null);
+                  im.src = src;
+                });
+              
+              const imgs = await Promise.all(rows.map((r) => loadImg(r.avatar)));
+
+              const badgeColor: Record<string, string> = {
+                Tank: "#2563EB",
+                Aircraft: "#7C3AED",
+                Missile: "#DC2626",
+                Mixed: "#D97706",
+  };
+
+              rows.forEach((r, i) => {
+                const c = Math.floor(i / perCol);
+                const row = i % perCol;
+                const x = pad + c * (colW + gapX);
+                const y = pad + headH + row * rowH;
+
+                ctx.fillStyle = row % 2 === 0 ? "#0B192E" : "#081324";
+                ctx.fillRect(x, y, colW, rowH - 4);
+                ctx.strokeStyle = "rgba(0,229,255,0.18)";
+                ctx.strokeRect(x, y, colW, rowH - 4);
+
+                ctx.fillStyle = "#64748B";
+                ctx.font = "bold 11px sans-serif";
+                ctx.fillText('#${i + 1}', x + 8, y + 24);
+
+                const im = imgs.at(i);
+                const avX = x + 36;
+                const avY = y + 5;
+                const avS = 30;
+                if (im) };
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(avX + avS / 2, avY + avS / 2, avS / 2, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(im, avX, avY, avS, avS);
+                ctx.restore();
+              } else {
+                ctx.font = "20px sans-serif";
+                ctx fillText(r.avatar, avX + 3, y + 27);
+              }
+
+              ctx.fillStyle = "#F8FAFC";
+              ctx.font = "bold 13px sans-serif";
+              const shortName = r.name.length > 15 ? r.name.slice(0, 14) + "..." : r.name;
+              ctx.fillText(shortname, x + 74, y + 24);
+
+              ctx.fillStyle = "#38BDF8";
+              cxt.font = "bold 12px sans-serif";
+              ctx fillText(r.powerLabel, x + 218, y + 24);
+
+              if (r.squad) {
+                ctx.fillStyle = badgeColor[r.squad] || "#334155";
+                ctx.fillRect(x + 280, y + 9, 72, 22);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "bold 11px sans-serif";
+                ctx.fillText(r.squad, x + 288, y + 24);
+              }
+            });
+
+  const link = document.createElement("a");
+  link.download = "alliance-roster.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  toast success("Roster PNG exported (" + rows.length + " players)");
+};
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] overflow-y-auto flex flex-col">
