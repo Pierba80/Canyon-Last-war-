@@ -345,7 +345,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               const rows = parsedList 
               .map((name) => {
                 const allProf = { ...profiles, ...draftProfiles };
-                const p = allProf[name] || alProf[name.trim().toLowerCase()] || {};
+                const p = allProf[name] || allProf[name.trim().toLowerCase()] || {};
                 const num = parseFloat(String(p.power ??"").replace(",", "."));
                 const valid = !Number.isNaN(num) && num > 0;
                 return {
