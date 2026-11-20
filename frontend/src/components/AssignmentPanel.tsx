@@ -418,7 +418,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
                 ctx.fillStyle = "#64748B";
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillText("#" + (i, 1), x + 8, y + 24);
+                ctx.fillText("#" + (i + 1), x + 8, y + 24);
 
                 const im = imgs.at(i);
                 const avX = x + 36;
@@ -450,7 +450,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 ctx.fillRect(x + 280, y + 9, 72, 22);
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillText(r.squad, toUpperCase(), x + 286, y + 24);
+                ctx.fillText(r.squad.toUpperCase(), x + 286, y + 24);
               }
             });
 
