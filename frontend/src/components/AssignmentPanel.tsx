@@ -344,7 +344,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               if (parsedList.length === 0) return;
               const rows = parsedList 
               .map((name) => {
-                const p = draftProfiles[name] || {};
+                const p = draftProfiles[name] || profiles[name] || {};
                 const num = parseFloat(String(p.power ??"").replace(",", "."));
                 const valid = !Number.isNaN(num) && num > 0;
                 return {
@@ -357,14 +357,14 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               })
               .sort((a,b) => b.power - a.power);
 
-              const cols = rows.length > 50 ? 3 : 2;
-              const perCol = Math.ceil(rows.length / cols);
+              const cols = 4;
+              const perCol = 25;
               const colW = 280;
               const gapX = 10;
               const rowH = 40;
               const headH = 68;
               const pad = 18;
-              const w = pad * 2 + cols + colW + (cols - 1) * gapX;
+              const w = pad * 2 + cols * colW + (cols - 1) * gapX;
               const h = pad * 2 + headH + perCol * rowH;
               
               const canvas = document.createElement("canvas");
@@ -452,7 +452,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 ctx.fillRect(x + 212, y + 8, 62, 20);
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillText(r.squad.toUpperCase(), x + 286, y + 24);
+                ctx.fillText(r.squad.toUpperCase(), x + 216, y + 24);
               }
             });
 
