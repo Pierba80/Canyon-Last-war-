@@ -347,15 +347,15 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 const p = draftProfiles[name] || {};
                 return {
                   name,
-                  power: Number(p.power) || 0,
-                  powerLabel: p.power ? p.power + "M" : "-",
+                  power: valid ? num : 0,
+                  powerLabel: valid ? num + "M" : "-",
                   squad: p.squad || "",
                   avatar: p.avatar || "🎖️",
                 };
               })
               .sort((a,b) => b.power - a.power);
 
-              const cols = rows.length > 50 ? 4 : rows.length > 25 ? 3 : 2;
+              const cols = rows.length > 50 ? 3 : 2;
               const perCol = Math.ceil(rows.length / cols);
               const colW = 360;
               const gapX = 14;
