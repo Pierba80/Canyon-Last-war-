@@ -348,7 +348,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 return {
                   name,
                   power: Number(p.power) || 0,
-                  powerLabel: p.power ? '${p.power}M' : "-",
+                  powerLabel: p.power ? p.power + "M" : "-",
                   squad: p.squad || "",
                   avatar: p.avatar || "🎖️",
                 };
@@ -381,7 +381,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.fillText("ALLIANCE ROSTER", pad, pad + 24);
               ctx.fillStyle = "#94A3B8";
               ctx.font = "13px sans-serif";
-              ctx.fillText('Players: ${rows.length}  Total Power: ${Math.round(totalPow * 10) / 10}M' , pad, pad + 46);
+              ctx.fillText('Players: " +rows.length + "  |  Total Power: " + (Math.round(totalPow * 10) / 10) + "M", pad, pad + 46);
 
               const loadImg = (src: string) =>
                 new Promise<HTMLImageElement | null>((res) => {
@@ -396,9 +396,13 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               const badgeColor: Record<string, string> = {
                 Tank: "#2563EB",
+                tank: "#2563EB",
                 Aircraft: "#7C3AED",
+                aircraft: "#7C3AED",
                 Missile: "#DC2626",
+                missile: "#DC2626",
                 Mixed: "#D97706",
+                mixed: "#D97706",
   };
 
               rows.forEach((r, i) => {
@@ -414,7 +418,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
                 ctx.fillStyle = "#64748B";
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillText('#${i + 1}', x + 8, y + 24);
+                ctx.fillText("#" + (i, 1), x + 8, y + 24);
 
                 const im = imgs.at(i);
                 const avX = x + 36;
@@ -446,7 +450,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 ctx.fillRect(x + 280, y + 9, 72, 22);
                 ctx.fillStyle = "#FFFFFF";
                 ctx.font = "bold 11px sans-serif";
-                ctx.fillText(r.squad, x + 288, y + 24);
+                ctx.fillText(r.squad, toUpperCase(), x + 286, y + 24);
               }
             });
 
