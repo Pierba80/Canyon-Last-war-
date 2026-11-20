@@ -376,7 +376,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.fillRect(0, 0, w, h);
 
               const totalPow = rows.reduce((s, r) => s + r.power, 0);
-              ctx.fillStyle = #00E5FF";
+              ctx.fillStyle = "#00E5FF";
               ctx.font = "bold 20px sans-serif"
               ctx.fillText("ALLIANCE ROSTER", pad, pad + 24);
               ctx.fillStyle = "#94A3B8";
