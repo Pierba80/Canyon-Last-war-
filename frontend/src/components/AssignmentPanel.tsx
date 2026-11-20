@@ -342,7 +342,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
         };
             const exportRosterPng = async () => {
               if (parsedList.length === 0) return;
-              const row = parsedList 
+              const rows = parsedList 
               .map((name) => {
                 const p = draftProfiles[name] || {};
                 return {
@@ -369,7 +369,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               canvas.width = w * 2;
               canvas.height = h * 2;
               const ctx = canvas.getContext("2d");
-              if (!crx) return;
+              if (!ctx) return;
               ctx.scale(2, 2);
 
               ctx.fillStyle = "#050D1A";
