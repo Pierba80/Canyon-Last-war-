@@ -340,7 +340,51 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
           };
           reader.readAsText(file);
         };
-                     
+            const exportRosterPng = async () => {
+              if (parsedList.length === 0) return;
+              const row = parsedList 
+              .map((name) => {
+                const p = draftProfiles[name] || {};
+                return {
+                  name,
+                  power: Number(p.power) || 0,
+                  powerLabel: p.power ? '${p.power}M' : "-",
+                  squad: p.squad || "",
+                  avatar: p.avatar || "🎖️",
+                };
+              })
+              .sort((a,b) => b.power - a.power);
+
+              const cols = rows.length > 50 ? 4 : rows.length > 25 ? 3 : 2;
+              const perCol = Math.ceil(rows.length / cols);
+              const colW = 360;
+              const gapX = 14;
+              const rowH = 44;
+              const headH = 68;
+              const pad = 18;
+              const w = pad * 2 + cols + colW + (cols - 1) * gapX;
+              const h = pad * 2 + headH + perCol * rowH;
+              
+              const canvas = document.createElement("canvas");
+              canvas.width = w * 2;
+              canvas.height = h * 2;
+              const ctx = canvas.getContext("2d");
+              if (!crx) return;
+              ctx.scale(2, 2);
+
+              ctx.fillStyle = "#050D1A";
+              ctx.fillRect(0, 0, w, h);
+
+              const totalPow = rows.reduce((s, r) => s + r.power, 0);
+              ctx.fillStyle = #00E5FF";
+              ctx.font = "bold 20px sans-serif"
+              ctx.fillText("ALLIANCE ROSTER", pad, pad + 24);
+              ctx.fillStyle = "#94A3B8";
+              ctx.font = "13px sans-serif";
+              ctx.fillText('Players: ${rows.length}  |  Total Power: ${Math.round(totalPow * 10) / 10}M' , pad, pad + 46);
+
+              QUI
+                          
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="members-dialog" className="max-w-lg max-h-[85dvh] overflow-y-auto flex flex-col">
