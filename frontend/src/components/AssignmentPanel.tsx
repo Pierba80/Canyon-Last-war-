@@ -570,11 +570,8 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                       <div>
                         <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">1st Squad</label>
                         <Input
-                          key={"p-" + name "-" prof.power}
                           defaultValue={prof.power}
-                          onBlur={(e) => {
-                            if (e.target.value !== prof.power) pathProf(name, { power: e.target.value });
-                          }}
+                          onBlur={(e) => patchProf(name, { power: e.target.vale})}
                           placeholder="24.5M"
                           className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
                         />
@@ -584,13 +581,10 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                       <div>
                       <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Total Power</label>
                       <input
-                         key={"tp-" + ame "-" + (prof.totalPower || "")}
                           defaultValue={prof.totalPower || ""}
-                          onBlur={(e) => {
-                            if (e.target.value !== prof.totalPower ?? "")) pathProf(name, { totalPower: e.target.value });
-                          }}
-                        placeholder="85.2M"
-                        className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
+                          onBlur={(e) => patchProf(name, { totalPower: e.target.value})}
+                          placeholder="85.2M"
+                          className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
                         />
                       </div>
 
