@@ -571,7 +571,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                         <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">1st Squad</label>
                         <Input
                           defaultValue={prof.power}
-                          onBlur={(e) => patchProf(name, { power: e.target.vale})}
+                          onBlur={(e) => patchProf(name, { power: e.target.value})}
                           placeholder="24.5M"
                           className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
                         />
