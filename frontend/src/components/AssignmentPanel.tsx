@@ -450,7 +450,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
               ctx.fillStyle = "#38BDF8";
               ctx.font = "bold 10px sans-serif";
-              ctx.fillText(r.powerLabel, x + 148 y + 23);
+              ctx.fillText(r.powerLabel, x + 148, y + 23);
 
               if (r.squad) {
                 ctx.fillStyle = badgeColor[r.squad] || "#334155";
@@ -581,7 +581,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                       <div>
                       <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Total Power</label>laber>
                       <input
-                        value={prof.totalPower ?? ""}
+                        value={prof.totalPower || ""}
                         onChange={(e) => patchProf(name, { totalPower: e.target.value })}
                         placeholder="85.2M"
                         className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
