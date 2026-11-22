@@ -51,6 +51,7 @@ export type SquadType = "tank" | "aircraft" | "missile";
 export interface PlayerProfile {
   avatar: string;
   power: string;
+  totalPower?: string;
   squad: SquadType;
 }
 
