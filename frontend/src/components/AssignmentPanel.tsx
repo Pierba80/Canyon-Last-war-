@@ -614,8 +614,6 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                           ))}
                         </div>
                       </div>
-                    </div>
-                  </div>
                 );
               })
             )}
