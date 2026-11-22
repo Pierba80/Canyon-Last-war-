@@ -548,7 +548,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                     <div className="flex items-center gap-2.5">
                       <label className="relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#38F8FF]/40 bg-[#002D54] text-lg overflow-hidden" title="Upload photo">
                         {isImg ? <img src={prof.avatar} alt={name} className="size-full object-cover" /> : prof.avatar}
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAvatarFile(name, e.target.files?.[0])} />
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { handleAvatarFile(name, e.target.files?.item(0) ?? undefined); e.target.value = ""; }} />
                       </label>
 
 
