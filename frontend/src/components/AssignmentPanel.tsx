@@ -545,31 +545,31 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                     style={{ contentVisibility: "auto", containIntrinsicSize: "0 105px" }}
                     className="rounded-md border border-[#00E5FF]/20 bg-[#071B33]/60 p-2.5 space-y-2"
                     >
-                    <div className="flex items-center gap-2.5">
-                      <label className="relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#38F8FF]/40 bg-[#002D54] text-lg overflow-hidden" title="Upload photo">
+                                        <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("avatar-upload-" + slug(name))?.click()}
+                        className="relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#38F8FF]/40 bg-[#002D54] text-lg overflow-hidden"
+                        title="Upload photo"
+                      >
                         {isImg ? <img src={prof.avatar} alt={name} className="size-full object-cover" /> : prof.avatar}
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => { handleAvatarFile(name, e.target.files?.item(0) ?? undefined); e.target.value = ""; }} />
-                      </label>
+                      </button>
+                      <input
+                        id={"avatar-upload-" + slug(name)}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          handleAvatarFile(name, e.target.files?.item(0) ?? undefined);
+                          e.target.value = "";
+                        }}
+                      />
 
-
-                      <div className="min-w-0 flex-1 flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold text-white">{name}</p>
-                        {!isImg && (
-                           <button
-                              type="button"
-                              onClick={() => {
-                                const idx = AVATAR_PRESETS.indexOf(prof.avatar);
-                                const next = AVATAR_PRESETS.at((idx + 1) % AVATAR_PRESETS.length) || "🎖";
-                                patchProf(name, { avatar: next});
-                              }}
-                              className="rounded border boder-white/10 bg-[#060A12]/60 px-2 py-0.5 text-[11px] tetx-[#8EA7C7] hover:text-white"
-                             title="Change icon"
-                             >
-                             icona {prof.avatar}
-                            </button>
-                          )}
-                        </div>
+                      </div>
                     </div>
+                    
 
                     <div className="grid grid-cols-3 gap-2">
                       <div>
