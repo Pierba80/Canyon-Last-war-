@@ -579,6 +579,17 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
 
                       <div>
+                      <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Total Power</label>laber>
+                      <input
+                        value={prof.totalPower ?? ""}
+                        onChange={(e) => patchProf(name, { totalPower: e.target.value })}
+                        placeholder="85.2M"
+                        className="mt-0.5 h-8 bg-[#060A12]/70 text-xs"
+                        />
+                      </div>
+
+
+                      <div>
                         <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Squad Type</label>
                         <div className="mt-0.5 grid grid-cols-3 gap-1">
                           {SQUAD_OPTIONS.map((sq) => (
