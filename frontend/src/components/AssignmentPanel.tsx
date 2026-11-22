@@ -275,7 +275,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
   const [tab, setTab] = useState<"profiles" | "bulk">("profiles");
   const parsedList = parseNames(text);
   const getProf = (name: string): PlayerProfile =>
-   draftProfiles[profileKey(name)] ?? { avatar: "🎖", power: "", squad: "tank" };
+   draftProfiles[profileKey(name)] ?? { avatar: "🎖", power: "", totslPower: "", squad: "tank" };
 
   const patchProf = (name: string, patch: Partial<PlayerProfile>) => {
     const k = profileKey(name);
@@ -348,10 +348,12 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 const p = allProf[name] || allProf[name.trim().toLowerCase()] || {};
                 const num = parseFloat(String(p.power ??"").replace(",", "."));
                 const valid = !Number.isNaN(num) && num > 0;
+                const totNum = parseFloat(String(p.totalPower ?? "").replace(",", "."));
+                const totValid = !Number.isNaN(totNum) && totNum > 0;
                 return {
                   name,
                   power: valid ? num : 0,
-                  powerLabel: valid ? num + "M" : "-",
+                  powerLabel: valid ? '${num}M${totValid ? '/${totNum}M' : "-",
                   squad: p.squad || "",
                   avatar: p.avatar || "🎖️",
                 };
@@ -447,8 +449,8 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
               ctx.fillText(shortName, x + 70, y + 23);
 
               ctx.fillStyle = "#38BDF8";
-              ctx.font = "bold 11px sans-serif";
-              ctx.fillText(r.powerLabel, x + 165, y + 23);
+              ctx.font = "bold 10px sans-serif";
+              ctx.fillText(r.powerLabel, x + 148 y + 23);
 
               if (r.squad) {
                 ctx.fillStyle = badgeColor[r.squad] || "#334155";
@@ -564,9 +566,9 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                     </div>
 
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Power (e.g. 24.5M)</label>
+                        <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">1st Squad</label>
                         <Input
                           value={prof.power}
                           onChange={(e) => patchProf(name, { power: e.target.value })}
