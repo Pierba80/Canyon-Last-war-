@@ -579,7 +579,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
 
 
                       <div>
-                      <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Total Power</label>laber>
+                      <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Total Power</label>
                       <input
                         value={prof.totalPower || ""}
                         onChange={(e) => patchProf(name, { totalPower: e.target.value })}
