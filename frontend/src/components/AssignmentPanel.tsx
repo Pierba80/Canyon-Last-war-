@@ -559,7 +559,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                               type="button"
                               onClick={() => {
                                 const idx = AVATAR_PRESETS.indexOf(prof.avatar);
-                                const next = AVATAR-PRESETS((idx + 1) % AVATAR_PRESETS.length) || "🎖";
+                                const next = AVATAR_PRESETS.at((idx + 1) % AVATAR_PRESETS.length) || "🎖";
                                 patchProf(name, { avatar: next});
                               }}
                               className="rounded border boder-white/10 bg-[#060A12]/60 px-2 py-0.5 text-[11px] tetx-[#8EA7C7] hover:text-white"
@@ -569,7 +569,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                             </button>
                           )}
                         </div>
-                     
+                    </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       <div>
