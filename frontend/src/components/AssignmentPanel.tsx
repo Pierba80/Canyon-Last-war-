@@ -284,20 +284,22 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
       [k]: { ...getProf(name), ...patch },
     }));
   };
-  
-  const handleAvatarFile = (name: string, file?: File) => {
+    const handleAvatarFile = (name: string, file?: File) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas. width = 64;
-          canvas.height = 64;
-          canvas.getContext("2d")?.drawImage(img,0, 0, 64, 64);
-          patchProf(name, { avatar: canvas.toDataURL("image/jpeg", 0.75) });
-        };
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 64;
+      canvas.height = 64;
+      canvas.getContext("2d")?.drawImage(img, 0, 0, 64, 64);
+      patchProf(name, { avatar: canvas.toDataURL("image/jpeg", 0.75) });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  };
+  
       }
     };
     reader.readAsDataURL(file);
