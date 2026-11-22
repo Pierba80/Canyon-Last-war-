@@ -570,7 +570,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                       <div>
                         <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">1st Squad</label>
                         <Input
-                          key={'p-${name}-${prof.power}'}
+                          key={"p-" + name "-" prof.power}
                           defaultValue={prof.power}
                           onBlur={(e) => {
                             if (e.target.value !== prof.power) pathProf(name, { power: e.target.value });
@@ -584,8 +584,8 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                       <div>
                       <label className="block font-mono text-[9px] uppercase tracking-wider text-[#7B96B8]">Total Power</label>
                       <input
-                         key={'p-${name}-${prof.totalPower ?? ""}'}
-                          defaultValue={prof.totalPower ?? ""}
+                         key={"tp-" + ame "-" + (prof.totalPower || "")}
+                          defaultValue={prof.totalPower || ""}
                           onBlur={(e) => {
                             if (e.target.value !== prof.totalPower ?? "")) pathProf(name, { totalPower: e.target.value });
                           }}
