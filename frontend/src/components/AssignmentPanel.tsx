@@ -614,11 +614,10 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                           ))}
                         </div>
                       </div>
+                    </div>
+                  </div>
                 );
-              })
-            )}
-          </div>
-        )}
+              })  
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline" data-testid="members-cancel-btn" />}>Cancel</DialogClose>
