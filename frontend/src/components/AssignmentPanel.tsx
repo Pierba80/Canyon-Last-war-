@@ -353,7 +353,7 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
                 return {
                   name,
                   power: valid ? num : 0,
-                  powerLabel: valid ? '${num}M${totValid ? '/${totNum}M' : "-",
+                  powerLabel: valid ? num + "M" + (totValid ? "/" + totNum + "M" :"") : "-",
                   squad: p.squad || "",
                   avatar: p.avatar || "🎖️",
                 };
