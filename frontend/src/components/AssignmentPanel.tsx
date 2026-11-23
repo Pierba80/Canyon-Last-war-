@@ -298,11 +298,6 @@ function MembersDialog({ open, onOpenChange, members, profiles, usedNames, onSav
     };
     img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
-  };
-  
-      }
-    };
-    reader.readAsDataURL(file);
     };
         const exportRosterFile = () => {
           const payload = {
